@@ -1,0 +1,9 @@
+# Agent / tooling files (not part of the website)
+.agents/
+.claude/
+agent/
+docs/
+skills-lock.json
+
+# macOS
+.DS_Store

@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wildkind — Protect &amp; Play</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Fredoka', 'Nunito', 'sans-serif'],
+            body: ['Nunito', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Nunito', system-ui, sans-serif; }
+
+    /* Hero drifting wave particles (fallback for browsers without the canvas) */
+    @keyframes driftUp { from { transform: translateY(0); opacity: 0.85; } to { transform: translateY(-110vh); opacity: 0; } }
+    .bubble { position: absolute; bottom: -40px; border-radius: 9999px; background: rgba(255, 255, 255, 0.35); animation: driftUp linear infinite; pointer-events: none; }
+
+    /* Modal entrance (flip + expand feel) */
+    @keyframes modalIn { from { opacity: 0; transform: translateY(20px) scale(0.96) rotateY(8deg); } to { opacity: 1; transform: none; } }
+    .modal-in { animation: modalIn 0.25s ease both; }
+
+    /* Map dot pulse + tooltip */
+    @keyframes dotPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.9; } }
+    .map-dot .pulse { animation: dotPulse 2s ease-in-out infinite; }
+    .map-tooltip { position: absolute; transform: translate(-50%, -100%); pointer-events: none; }
+
+    /* Active tab pill */
+    .tab-active { background: linear-gradient(135deg, #059669, #0d9488); color: #fff; box-shadow: 0 8px 20px rgba(5, 150, 105, 0.35); }
+
+    /* Fade-in for result cards */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    .fade-in { animation: fadeIn 0.4s ease both; }
+
+    /* Answer feedback states (override Tailwind border/bg) */
+    .answer-correct { background: #10b981 !important; color: #fff !important; border-color: #059669 !important; }
+    .answer-wrong { background: #f43f5e !important; color: #fff !important; border-color: #e11d48 !important; }
+
+    /* Selected answer state (personality quiz) */
+    .answer-selected { background: #0d9488 !important; color: #fff !important; border-color: #0f766e !important; box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35); }
+
+    /* Smooth question transition */
+    @keyframes questionIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+    .question-in { animation: questionIn 0.35s ease both; }
+
+    /* Triage treatment animations */
+    @keyframes treatScrub { 0%,100% { transform: translateX(0) rotate(0); } 25% { transform: translateX(-12px) rotate(-8deg); } 75% { transform: translateX(12px) rotate(8deg); } }
+    @keyframes treatPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.18); } }
+    @keyframes treatBounce { 0%,100% { transform: translateY(0); } 40% { transform: translateY(-14px); } 70% { transform: translateY(0); } }
+    @keyframes treatWrap { 0% { transform: scale(0) rotate(-40deg); opacity: 0; } 60% { transform: scale(1.15) rotate(10deg); opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+    @keyframes toolFloat { 0% { transform: translateY(0) scale(0.6); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(-34px) scale(1.4); opacity: 0; } }
+    .anim-scrub { animation: treatScrub 0.8s ease; }
+    .anim-pulse { animation: treatPulse 0.8s ease; }
+    .anim-bounce { animation: treatBounce 0.8s ease; }
+    .anim-wrap { animation: treatWrap 0.8s ease; }
+    .tool-float { animation: toolFloat 0.9s ease forwards; }
+  </style>
+</head>
+<body class="font-body text-slate-800 antialiased bg-gradient-to-b from-sky-50 via-white to-emerald-50">
+
+  <!-- Fixed wave-particle background -->
+  <canvas id="particles" class="fixed inset-0 z-0 pointer-events-none"></canvas>
+
+  <main class="relative z-10">
+
+    <!-- ============ 1. HERO ============ -->
+    <section id="hero" class="relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-500 to-sky-600 text-white">
+      <div class="max-w-5xl mx-auto px-6 pt-14 pb-24 md:pt-20 md:pb-32 text-center relative z-10">
+        <img id="hero-turtle"
+             src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Green_Sea_Turtle_grazing_seagrass.jpg/960px-Green_Sea_Turtle_grazing_seagrass.jpg"
+             alt="A green sea turtle swimming underwater"
+             class="mx-auto w-60 h-60 md:w-80 md:h-80 object-cover rounded-full border-4 border-white/40 shadow-2xl will-change-[filter,opacity]" />
+
+        <h1 class="font-display text-5xl md:text-7xl font-bold mt-6">Wildkind</h1>
+        <p class="mt-4 text-lg md:text-xl text-emerald-50 max-w-2xl mx-auto">Learn about endangered animals, see where they still live, meet your animal twin, and discover exactly how <em>you</em> can help.</p>
+
+        <div class="mt-8 flex flex-wrap justify-center gap-3">
+          <button data-scroll-to="animals" type="button" class="px-5 py-3 rounded-full bg-white text-emerald-700 font-bold hover:bg-emerald-50 hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Meet the Animals</button>
+          <button data-scroll-to="map" type="button" class="px-5 py-3 rounded-full bg-white/20 backdrop-blur text-white font-bold border border-white/40 hover:bg-white/30 hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white">See the Map</button>
+          <button data-scroll-to="personality" type="button" class="px-5 py-3 rounded-full bg-white/20 backdrop-blur text-white font-bold border border-white/40 hover:bg-white/30 hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Find Your Animal</button>
+          <button data-scroll-to="games" type="button" class="px-5 py-3 rounded-full bg-white/20 backdrop-blur text-white font-bold border border-white/40 hover:bg-white/30 hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Play the Games</button>
+          <button data-scroll-to="quiz" type="button" class="px-5 py-3 rounded-full bg-white/20 backdrop-blur text-white font-bold border border-white/40 hover:bg-white/30 hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Take the Quiz</button>
+          <button data-scroll-to="action" type="button" class="px-5 py-3 rounded-full bg-white/20 backdrop-blur text-white font-bold border border-white/40 hover:bg-white/30 hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Get My Action Plan</button>
+        </div>
+      </div>
+
+      <svg class="block w-full text-sky-50" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0,32 C360,60 1080,0 1440,40 L1440,60 L0,60 Z" fill="currentColor"></path>
+      </svg>
+    </section>
+
+    <!-- ============ 2. ANIMAL FACT CARDS ============ -->
+    <section id="animals" class="py-16">
+      <div class="max-w-6xl mx-auto px-6">
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-slate-800 text-center">Meet the Critically Endangered</h2>
+        <p class="text-slate-600 text-center mt-2 max-w-2xl mx-auto">Tap a card to open its full story.</p>
+        <div id="animal-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10"></div>
+      </div>
+    </section>
+
+    <!-- ============ 3. WORLD MAP ============ -->
+    <section id="map" class="py-16">
+      <div class="max-w-5xl mx-auto px-6">
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-slate-800 text-center">Where They Still Roam</h2>
+        <p class="text-slate-600 text-center mt-2 max-w-2xl mx-auto">Each dot is one place a species still survives. Tap a dot for its story.</p>
+        <div id="map-legend" class="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-6"></div>
+        <div id="map-container" class="relative mt-6 bg-sky-50/70 rounded-2xl p-2 md:p-4 shadow-sm border border-sky-100"></div>
+        <p class="text-center text-xs text-slate-400 mt-3">Distribution data: IUCN Red List / WWF / BirdLife (2026).</p>
+      </div>
+    </section>
+
+    <!-- ============ 4. PERSONALITY QUIZ ============ -->
+    <section id="personality" class="py-16">
+      <div class="max-w-2xl mx-auto px-6">
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-slate-800 text-center">Which Animal Are You?</h2>
+        <p class="text-slate-600 text-center mt-2 max-w-2xl mx-auto">Answer 12 quick questions and meet your wild twin.</p>
+        <div class="mt-8 bg-white/70 rounded-2xl p-6 md:p-8 shadow-md border border-slate-100">
+          <div id="personality-container"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 5. RESCUE MINI-GAMES ============ -->
+    <section id="games" class="py-16">
+      <div class="max-w-4xl mx-auto px-6">
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-slate-800 text-center">Rescue Mini-Games</h2>
+        <p class="text-slate-600 text-center mt-2 max-w-2xl mx-auto">Pick a mission and jump in.</p>
+        <div class="flex gap-2 justify-center mt-8 flex-wrap" role="tablist" aria-label="Mini-games">
+          <button data-tab="game" type="button" role="tab" aria-selected="true" class="tab-active px-5 py-2.5 rounded-full font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400">🐢 Heart of the Ocean</button>
+          <button data-tab="triage" type="button" role="tab" aria-selected="false" class="px-5 py-2.5 rounded-full font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400">🏥 Wildlife Clinic Triage</button>
+        </div>
+        <div data-pane="game" class="mt-6">
+          <div class="bg-slate-900 rounded-2xl overflow-hidden shadow-xl">
+            <div class="flex items-center justify-between px-4 py-2 text-white text-sm font-bold bg-slate-800">
+              <span>Score: <span id="game-score">0</span></span>
+              <span>⏱ <span id="game-timer">60</span>s</span>
+              <span>❤️ <span id="game-lives">3</span></span>
+              <span>🏆 <span id="game-highscore">0</span></span>
+            </div>
+            <div class="relative min-h-[420px]">
+              <canvas id="game-canvas" class="block w-full"></canvas>
+              <div id="game-overlay" class="absolute inset-0 bg-slate-900/80 flex items-center justify-center p-4 overflow-y-auto">
+                <div id="game-start-screen" class="text-center text-white">
+                  <h4 class="font-display text-3xl font-bold">🐢 Heart of the Ocean</h4>
+                  <p class="mt-1 text-sm text-slate-300">Swim as a sea turtle, catch love &amp; care, and survive 60 seconds.</p>
+                  <div class="mt-4 grid grid-cols-2 gap-3 text-left max-w-md mx-auto">
+                    <div class="bg-rose-500/20 border border-rose-400/40 rounded-xl p-3">
+                      <p class="font-bold text-rose-300 text-sm mb-1">❤️ Catch (+points)</p>
+                      <p class="text-2xl leading-tight">❤️</p>
+                      <p class="text-xs text-slate-300 mt-1">Red hearts = love &amp; care</p>
+                    </div>
+                    <div class="bg-slate-500/20 border border-slate-400/40 rounded-xl p-3">
+                      <p class="font-bold text-slate-200 text-sm mb-1">☠️ Dodge (−1 life)</p>
+                      <p class="text-2xl leading-tight">🛍️ 🧴</p>
+                      <p class="text-xs text-slate-300 mt-1">Garbage bags &amp; plastic bottles</p>
+                    </div>
+                  </div>
+                  <p class="mt-3 text-sm text-slate-300">Move with <strong>arrow keys</strong> or <strong>WASD</strong>. 3 lives — garbage speeds up as the clock runs down.</p>
+                  <button id="game-start-btn" type="button" class="mt-5 px-8 py-3 rounded-full bg-green-600 text-white font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Start</button>
+                </div>
+                <div id="game-over-screen" class="text-center text-white hidden">
+                  <h4 class="font-display text-2xl font-bold">Time's up!</h4>
+                  <p class="mt-2 text-lg">Final score: <strong id="game-final-score">0</strong></p>
+                  <p class="text-sm text-slate-300">High score: <span id="game-final-high">0</span></p>
+                  <button id="game-restart-btn" type="button" class="mt-5 px-8 py-3 rounded-full bg-green-600 text-white font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Play again</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-center text-sm text-slate-500 mt-3">Tip: garbage speeds up as the clock runs down.</p>
+        </div>
+        <div data-pane="triage" class="mt-6 hidden">
+          <div class="bg-teal-50 rounded-2xl p-6 md:p-8 shadow-sm border border-teal-100">
+            <div id="triage-container"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 6. KNOWLEDGE QUIZ ============ -->
+    <section id="quiz" class="py-16">
+      <div class="max-w-2xl mx-auto px-6">
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-slate-800 text-center">Knowledge Quiz</h2>
+        <p class="text-slate-600 text-center mt-2 max-w-2xl mx-auto">Test what you learned from the cards.</p>
+        <div class="mt-8 bg-white/70 rounded-2xl p-6 md:p-8 shadow-md border border-slate-100">
+          <div id="quiz-container"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 7. ACTION MATCHMAKER ============ -->
+    <section id="action" class="py-16">
+      <div class="max-w-2xl mx-auto px-6">
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-slate-800 text-center">Your Rescue Action Plan</h2>
+        <p class="text-slate-600 text-center mt-2 max-w-2xl mx-auto">Answer two quick questions and get steps that fit your life.</p>
+        <div class="mt-8 bg-gradient-to-br from-emerald-50 to-sky-50 rounded-2xl p-6 md:p-8 shadow-md border border-emerald-100">
+          <div id="matchmaker-container"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FOOTER ============ -->
+    <footer class="bg-slate-800 text-slate-300 py-10 text-center text-sm">
+      <p class="font-display text-lg font-semibold text-white">🌍 Wildkind</p>
+      <p class="mt-1">By: Ariel Fong</p>
+      <p class="mt-1">Built to educate and inspire action for endangered species.</p>
+      <p class="mt-4 text-slate-400">Distribution data: IUCN Red List / WWF / BirdLife (2026).</p>
+      <div class="mt-4 max-w-2xl mx-auto px-6 text-left text-xs text-slate-400 leading-relaxed">
+        <p class="font-bold text-slate-300 uppercase tracking-wide">Photo credits</p>
+        <ul class="mt-2 space-y-1">
+          <li>Hero turtle — <a class="underline hover:text-white" href="https://commons.wikimedia.org/wiki/File:Green_Sea_Turtle_grazing_seagrass.jpg">"Green Sea Turtle grazing seagrass"</a> by P.Lindgren (CC BY-SA 3.0)</li>
+          <li>Hawksbill Turtle — <a class="underline hover:text-white" href="https://commons.wikimedia.org/wiki/File:Tortuga_carey_(Eretmochelys_imbricata),_parque_nacional_Ras_Muhammad,_Egipto,_2022-03-28,_DD_56.jpg">"Tortuga carey"</a> by Diego Delso (CC BY-SA 4.0)</li>
+          <li>Amur Leopard — <a class="underline hover:text-white" href="https://commons.wikimedia.org/wiki/File:Amur_Leopard_Panthera_pardus_orientalis_Facing_Forward_1761px.jpg">"Amur Leopard"</a> by Derek Ramsey (CC BY-SA 2.5)</li>
+          <li>Vaquita — <a class="underline hover:text-white" href="https://commons.wikimedia.org/wiki/File:Vaquita2_Olson_NOAA.jpg">"Vaquita2 Olson NOAA"</a> by Paula Olson, NOAA (Public domain)</li>
+          <li>Pangolin — <a class="underline hover:text-white" href="https://commons.wikimedia.org/wiki/File:Sunda_Pangolin_Trenggiling_jawa.jpg">"Sunda Pangolin Trenggiling jawa"</a> by Ari hidayat99 (CC BY-SA 4.0)</li>
+          <li>Mountain Gorilla — <a class="underline hover:text-white" href="https://commons.wikimedia.org/wiki/File:Gorila_de_monta%C3%B1a_(Gorilla_beringei_beringei),_parque_nacional_de_la_Selva_Impenetrable_de_Bwindi,_Uganda,_2024-02-02,_DD_80.jpg">"Gorila de montaña"</a> by Diego Delso (CC BY-SA 4.0)</li>
+          <li>Kakapo — <a class="underline hover:text-white" href="https://commons.wikimedia.org/wiki/File:Kakapo_Sirocco_1.jpg">"Kakapo Sirocco 1"</a> by Department of Conservation (CC BY 2.0)</li>
+        </ul>
+      </div>
+    </footer>
+
+    <!-- Animal detail modal -->
+    <div id="modal-backdrop" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/70" role="dialog" aria-modal="true" aria-label="Animal details">
+      <div class="modal-in bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div class="relative">
+          <img id="modal-image" class="w-full h-56 object-cover rounded-t-2xl" alt="" />
+          <span id="modal-emoji" class="hidden absolute inset-0 items-center justify-center text-8xl rounded-t-2xl bg-teal-50"></span>
+          <button id="modal-close" type="button" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-slate-900/60 text-white text-lg font-bold hover:bg-slate-900/80 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white" aria-label="Close">✕</button>
+        </div>
+        <div class="p-6">
+          <div class="flex flex-wrap items-center gap-2">
+            <h3 id="modal-name" class="font-display text-2xl font-bold text-slate-800"></h3>
+            <span id="modal-status" class="px-3 py-1 rounded-full text-xs font-bold text-white"></span>
+          </div>
+          <p id="modal-species" class="text-sm italic text-slate-500 mt-0.5"></p>
+          <p id="modal-credit" class="text-xs text-slate-400 mt-2"></p>
+          <ul id="modal-facts" class="mt-4 space-y-2 text-sm text-slate-700 list-disc list-inside"></ul>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // ============ DATA: single source of truth ============
+    const DATA = {
+      animals: [
+        {
+          id: 'hawksbill', name: 'Hawksbill Turtle', species: 'Eretmochelys imbricata', emoji: '🐢',
+          status: 'Critically Endangered', statusClass: 'red', color: '#14b8a6',
+          population: '~20,000–25,000 nesting females',
+          habitat: 'Tropical coral reefs of the Atlantic, Indian & Pacific Oceans',
+          threats: 'Poaching for its "tortoiseshell" shell, habitat loss, and climate change',
+          funFact: 'Hawksbills eat sponges — a single one can eat over 500 kg a year, keeping reefs healthy.',
+          conservation: 'Protected under CITES; beach patrols guard nests. Refuse turtle-shell souvenirs.',
+          facts: [
+            'Scientific name: Eretmochelys imbricata',
+            'Lives on tropical coral reefs in the Atlantic, Indian & Pacific Oceans',
+            'Population: ~20,000–25,000 nesting females',
+            'Eats sponges, which keeps coral reefs healthy for all sea life',
+            'Threats: poached for its shell; habitat loss & climate change',
+            'Helped by CITES protections & beach patrols — refuse turtle-shell souvenirs',
+          ],
+          image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Tortuga_carey_%28Eretmochelys_imbricata%29%2C_parque_nacional_Ras_Muhammad%2C_Egipto%2C_2022-03-28%2C_DD_56.jpg/960px-Tortuga_carey_%28Eretmochelys_imbricata%29%2C_parque_nacional_Ras_Muhammad%2C_Egipto%2C_2022-03-28%2C_DD_56.jpg',
+          imageCredit: 'Diego Delso — CC BY-SA 4.0',
+          dots: [[-66.6, 18.2], [55.4, -4.6], [118.0, -2.5]],
+        },
+        {
+          id: 'amur-leopard', name: 'Amur Leopard', species: 'Panthera pardus orientalis', emoji: '🐆',
+          status: 'Critically Endangered', statusClass: 'red', color: '#f97316',
+          population: '~120 in the wild',
+          habitat: 'Temperate forests of the Russian Far East & northeast China',
+          threats: 'Poaching, loss of prey, and habitat fragmentation',
+          funFact: 'It can leap over 10 feet straight up and drag prey twice its weight into trees.',
+          conservation: 'Land of the Leopard National Park and anti-poaching patrols protect its forest home.',
+          facts: [
+            'Scientific name: Panthera pardus orientalis',
+            'Lives in the Russian Far East & northeast China',
+            'Population: ~120 in the wild (up from ~30 in 2007)',
+            'Can leap over 10 feet straight up',
+            'Threats: poaching, prey loss, habitat fragmentation',
+            'Helped by Land of the Leopard National Park & anti-poaching patrols',
+          ],
+          image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Amur_Leopard_Panthera_pardus_orientalis_Facing_Forward_1761px.jpg/960px-Amur_Leopard_Panthera_pardus_orientalis_Facing_Forward_1761px.jpg',
+          imageCredit: 'Derek Ramsey — CC BY-SA 2.5',
+          dots: [[131.5, 43.4]],
+        },
+        {
+          id: 'vaquita', name: 'Vaquita', species: 'Phocoena sinus', emoji: '🐬',
+          status: 'Critically Endangered', statusClass: 'red', color: '#0ea5e9',
+          population: '~10 left (7–10 in 2025)',
+          habitat: 'Northern Gulf of California, Mexico — and nowhere else',
+          threats: 'Bycatch in illegal gillnets set for the totoaba fish',
+          funFact: 'The world\'s smallest porpoise — and one of the rarest mammals on Earth.',
+          conservation: 'Gillnet bans and naval patrols protect it; support groups pushing for gear-free zones.',
+          facts: [
+            'Scientific name: Phocoena sinus',
+            'Lives only in the northern Gulf of California, Mexico',
+            'Population: ~10 left (7–10 in 2025) — the rarest marine mammal',
+            'The world\'s smallest porpoise',
+            'Threats: bycatch in illegal gillnets set for totoaba fish',
+            'Helped by gillnet bans & naval patrols',
+          ],
+          image: 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Vaquita2_Olson_NOAA.jpg',
+          imageCredit: 'Paula Olson, NOAA — Public domain',
+          dots: [[-114.8, 31.0]],
+        },
+        {
+          id: 'pangolin', name: 'Pangolin', species: 'Manis javanica (Sunda pangolin)', emoji: '🦔',
+          status: 'Critically Endangered', statusClass: 'red', color: '#f43f5e',
+          population: 'Unknown — declining fast',
+          habitat: 'Forests of Southeast Asia',
+          threats: 'The most trafficked mammal on Earth — hunted for scales and meat',
+          funFact: 'The only mammal covered in scales — one pangolin eats 70 million insects a year.',
+          conservation: 'Stronger anti-trafficking laws and seizures. Never buy pangolin-scale "medicine".',
+          facts: [
+            'Scientific name: Manis javanica (Sunda pangolin)',
+            'Lives in forests across Southeast Asia',
+            'Population: unknown — declining fast',
+            'The only mammal covered in scales; one eats 70 million insects a year',
+            'Threats: the most trafficked mammal — hunted for scales & meat',
+            'Helped by anti-trafficking laws; never buy pangolin "medicine"',
+          ],
+          image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Sunda_Pangolin_Trenggiling_jawa.jpg/960px-Sunda_Pangolin_Trenggiling_jawa.jpg',
+          imageCredit: 'Ari hidayat99 — CC BY-SA 4.0',
+          dots: [[102.0, 2.0], [113.5, 0.5], [108.0, 14.0]],
+        },
+        {
+          id: 'mountain-gorilla', name: 'Mountain Gorilla', species: 'Gorilla beringei beringei', emoji: '🦍',
+          status: 'Endangered', statusClass: 'orange', color: '#8b5cf6',
+          population: '~1,063',
+          habitat: 'Virunga Massif (Rwanda/Uganda/DRC) & Bwindi (Uganda)',
+          threats: 'Habitat loss, poaching, and disease',
+          funFact: 'It shares about 98% of its DNA with humans.',
+          conservation: 'Eco-tourism funds rangers and communities; responsible tourism helps protect them.',
+          facts: [
+            'Scientific name: Gorilla beringei beringei',
+            'Lives in the Virunga Massif (Rwanda/Uganda/DRC) & Bwindi (Uganda)',
+            'Population: ~1,063 — growing!',
+            'Shares ~98% of its DNA with humans',
+            'Threats: habitat loss, poaching, disease',
+            'Helped by eco-tourism that funds rangers',
+          ],
+          image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Gorila_de_monta%C3%B1a_%28Gorilla_beringei_beringei%29%2C_parque_nacional_de_la_Selva_Impenetrable_de_Bwindi%2C_Uganda%2C_2024-02-02%2C_DD_80.jpg/960px-Gorila_de_monta%C3%B1a_%28Gorilla_beringei_beringei%29%2C_parque_nacional_de_la_Selva_Impenetrable_de_Bwindi%2C_Uganda%2C_2024-02-02%2C_DD_80.jpg',
+          imageCredit: 'Diego Delso — CC BY-SA 4.0',
+          dots: [[29.5, -1.0]],
+        },
+        {
+          id: 'kakapo', name: 'Kakapo', species: 'Strigops habroptilus', emoji: '🦜',
+          status: 'Critically Endangered', statusClass: 'red', color: '#84cc16',
+          population: '~250',
+          habitat: 'Predator-free islands of New Zealand',
+          threats: 'Introduced predators and low genetic diversity',
+          funFact: 'The world\'s only flightless parrot — it "booms" at night to attract a mate.',
+          conservation: 'Intensive island sanctuaries; every bird is named and individually monitored.',
+          facts: [
+            'Scientific name: Strigops habroptilus',
+            'Lives on predator-free islands of New Zealand',
+            'Population: ~250 — every bird is named & monitored',
+            'The world\'s only flightless parrot',
+            'Threats: introduced predators, low genetic diversity',
+            'Helped by intensive island sanctuaries',
+          ],
+          image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Kakapo_Sirocco_1.jpg/960px-Kakapo_Sirocco_1.jpg',
+          imageCredit: 'Department of Conservation — CC BY 2.0',
+          dots: [[167.0, -46.0]],
+        },
+      ],
+
+      personality: {
+        questions: [
+          { question: 'On a free afternoon, you\'d rather…', answers: [
+            { text: 'Hang out with your closest friends or family', animal: 'mountain-gorilla' },
+            { text: 'Go explore somewhere new by yourself', animal: 'amur-leopard' },
+            { text: 'Quietly read or rest somewhere calm', animal: 'vaquita' },
+            { text: 'Tinker with a project nobody else gets', animal: 'kakapo' },
+            { text: 'Help someone out without making a fuss', animal: 'hawksbill' },
+          ] },
+          { question: 'Pick a superpower.', answers: [
+            { text: 'Climbing anything with ease', animal: 'amur-leopard' },
+            { text: 'A loyal, unbreakable family bond', animal: 'mountain-gorilla' },
+            { text: 'Staying calm in any storm', animal: 'hawksbill' },
+            { text: 'Being one-of-a-kind', animal: 'kakapo' },
+            { text: 'Blending in so no one notices me', animal: 'pangolin' },
+          ] },
+          { question: 'Your friends would describe you as…', answers: [
+            { text: 'The dependable caretaker', animal: 'mountain-gorilla' },
+            { text: 'The bold adventurer', animal: 'amur-leopard' },
+            { text: 'The gentle helper', animal: 'hawksbill' },
+            { text: 'The quiet one who\'s always there', animal: 'vaquita' },
+            { text: 'The one nobody quite figures out', animal: 'pangolin' },
+          ] },
+          { question: 'When things get tough, you…', answers: [
+            { text: 'Push through on your own', animal: 'amur-leopard' },
+            { text: 'Adapt and keep moving', animal: 'hawksbill' },
+            { text: 'Roll up into a ball and wait it out', animal: 'pangolin' },
+            { text: 'Try an unusual workaround', animal: 'kakapo' },
+            { text: 'Slip away somewhere quiet to think', animal: 'vaquita' },
+          ] },
+          { question: 'Pick a favorite sound.', answers: [
+            { text: 'Ocean waves', animal: 'hawksbill' },
+            { text: 'A crackling campfire with friends', animal: 'mountain-gorilla' },
+            { text: 'Absolute quiet', animal: 'vaquita' },
+            { text: 'A weird song only you like', animal: 'kakapo' },
+            { text: 'The soft rustle of leaves in a den', animal: 'pangolin' },
+          ] },
+          { question: 'Your ideal vacation is…', answers: [
+            { text: 'A mountain trek', animal: 'amur-leopard' },
+            { text: 'A cozy cabin with loved ones', animal: 'mountain-gorilla' },
+            { text: 'A hidden beach nobody knows about', animal: 'vaquita' },
+            { text: 'A burrow where I feel safe', animal: 'pangolin' },
+            { text: 'Somewhere off the map entirely', animal: 'kakapo' },
+          ] },
+          { question: 'What matters most to you?', answers: [
+            { text: 'Making things better for others', animal: 'hawksbill' },
+            { text: 'My freedom and independence', animal: 'amur-leopard' },
+            { text: 'Keeping the peace', animal: 'vaquita' },
+            { text: 'Protecting the people I love', animal: 'mountain-gorilla' },
+            { text: 'Staying true to my weird self', animal: 'kakapo' },
+          ] },
+          { question: 'At a party, you\'re usually…', answers: [
+            { text: 'In the middle of everything', animal: 'mountain-gorilla' },
+            { text: 'Talking one-on-one in a corner', animal: 'pangolin' },
+            { text: 'Off doing your own thing', animal: 'amur-leopard' },
+            { text: 'Showing someone your weird hobby', animal: 'kakapo' },
+            { text: 'Making sure everyone\'s okay', animal: 'hawksbill' },
+          ] },
+          { question: 'Choose a snack.', answers: [
+            { text: 'Something sustainable and ocean-friendly', animal: 'hawksbill' },
+            { text: 'Whatever I grabbed on the go', animal: 'amur-leopard' },
+            { text: 'A quiet, slow meal by myself', animal: 'vaquita' },
+            { text: 'A safe snack inside my blanket burrito', animal: 'pangolin' },
+            { text: 'A very specific, unusual craving', animal: 'kakapo' },
+          ] },
+          { question: 'How do you handle criticism?', answers: [
+            { text: 'I take it in stride and adapt', animal: 'hawksbill' },
+            { text: 'I retreat for a bit', animal: 'pangolin' },
+            { text: 'I protect my circle', animal: 'mountain-gorilla' },
+            { text: 'I prefer to just be left alone', animal: 'vaquita' },
+            { text: 'I shrug and keep being myself', animal: 'kakapo' },
+          ] },
+          { question: 'Which quote resonates most?', answers: [
+            { text: 'Go your own way.', animal: 'amur-leopard' },
+            { text: 'Still waters run deep.', animal: 'vaquita' },
+            { text: 'Tough on the outside, soft inside.', animal: 'pangolin' },
+            { text: 'Home is where my people are.', animal: 'mountain-gorilla' },
+            { text: 'Why be normal?', animal: 'kakapo' },
+          ] },
+          { question: 'A friend needs help. You…', answers: [
+            { text: 'Show up and quietly help', animal: 'hawksbill' },
+            { text: 'Lead the way solo', animal: 'amur-leopard' },
+            { text: 'Just be there and listen', animal: 'vaquita' },
+            { text: 'Help, then vanish before they can thank me', animal: 'pangolin' },
+            { text: 'Gather everyone to help together', animal: 'mountain-gorilla' },
+          ] },
+        ],
+        results: {
+          'hawksbill': { name: 'Hawksbill Turtle', emoji: '🐢', title: 'The Calm & Caring One', blurb: 'Like the hawksbill, you\'re steady and gentle — you quietly make your world a healthier place and help without being asked.' },
+          'amur-leopard': { name: 'Amur Leopard', emoji: '🐆', title: 'The Bold & Independent One', blurb: 'Independent, agile, and a little fearless — you leap at challenges and carve your own path, like the rarest big cat on Earth.' },
+          'vaquita': { name: 'Vaquita', emoji: '🐬', title: 'The Shy & Gentle One', blurb: 'Peaceful, observant, and deeply rare — you treasure a small, safe circle, just like the world\'s smallest porpoise.' },
+          'pangolin': { name: 'Pangolin', emoji: '🦔', title: 'The Reserved & Protective One', blurb: 'Quiet on the outside, fiercely loyal within — you\'re underestimated exactly like the most trafficked mammal on Earth.' },
+          'mountain-gorilla': { name: 'Mountain Gorilla', emoji: '🦍', title: 'The Social & Strong One', blurb: 'Family and friends mean everything to you. Like a mountain gorilla, you protect your circle with quiet strength.' },
+          'kakapo': { name: 'Kakapo', emoji: '🦜', title: 'The Quirky & Curious One', blurb: 'One-of-a-kind and proud of it — you march to your own beat, just like the world\'s only flightless parrot.' },
+        },
+      },
+
+      quiz: [
+        { question: 'Which animal is the world\'s only flightless parrot?', answers: ['Kakapo', 'Amur Leopard', 'Vaquita', 'Pangolin'], correctIndex: 0, fact: 'The kakapo can\'t fly — instead it climbs and "booms" at night.' },
+        { question: 'Which mammal is the most trafficked in the world?', answers: ['Hawksbill Turtle', 'Pangolin', 'Mountain Gorilla', 'Kakapo'], correctIndex: 1, fact: 'Pangolins are hunted for their scales and meat more than any other mammal.' },
+        { question: 'The vaquita lives in only one place on Earth. Where?', answers: ['Galápagos Islands', 'Great Barrier Reef', 'Gulf of California', 'Amazon River'], correctIndex: 2, fact: 'The vaquita is found only in the Gulf of California, Mexico.' },
+        { question: 'Mountain gorillas share about how much of their DNA with humans?', answers: ['50%', '75%', '90%', '98%'], correctIndex: 3, fact: 'Gorillas share roughly 98% of our DNA.' },
+        { question: 'What do hawksbill turtles eat that helps keep coral reefs healthy?', answers: ['Seaweed', 'Sponges', 'Small fish', 'Plankton'], correctIndex: 1, fact: 'By eating sponges, hawksbills stop them from smothering coral reefs.' },
+      ],
+
+      matchmaker: {
+        'Primary/Middle School|30 mins/week': { title: 'Young Explorer Plan', steps: [
+          'Make one animal fact poster a week and show it to your class or family.',
+          'Pack a waste-free lunch once a week and tell a friend why it helps.',
+          'Read one page a week from a wildlife book or site, then share what you learned.',
+        ] },
+        'Primary/Middle School|A few hours on weekends': { title: 'Weekend Hero Plan', steps: [
+          'Host a bake-sale or lemonade-stand fundraiser for a vetted group like WWF.',
+          'Join a family beach or park clean-up to keep habitats trash-free.',
+          'Make recycled art about an endangered animal and enter it in a school fair.',
+        ] },
+        'Primary/Middle School|Direct financial support/Lifestyle shifts': { title: 'Give & Grow Plan', steps: [
+          'Ask a grown-up to "adopt" an animal for you through WWF or a local rescue.',
+          'Pick a snack with less palm oil or plastic — check labels with a grown-up.',
+          'Donate birthday money to a wildlife charity you choose instead of extra gifts.',
+        ] },
+        'High School/College|30 mins/week': { title: 'Micro-Impact Plan', steps: [
+          'Follow 2–3 conservation orgs and reshare one fact or action to your socials weekly.',
+          'Set up a small recurring micro-donation (even $3/month) to a vetted wildlife group.',
+          'Swap one single-use plastic item each week for a reusable one and log it.',
+        ] },
+        'High School/College|A few hours on weekends': { title: 'Campus Changemaker Plan', steps: [
+          'Start or join an eco-club and run a monthly campus fundraiser or awareness event.',
+          'Volunteer weekends at a local wildlife rescue or animal shelter.',
+          'Launch a social campaign posting one animal fact and action each weekend.',
+        ] },
+        'High School/College|Direct financial support/Lifestyle shifts': { title: 'Conscious Consumer Plan', steps: [
+          'Go meatless or seafood-conscious on select days using a sustainable seafood guide.',
+          'Fund a team to "adopt" a species or sponsor a ranger through an org like WWF.',
+          'Buy second-hand or sustainable-certified goods and skip turtle-shell, ivory, and pangolin items.',
+        ] },
+        'Busy Working Adult/Shift Worker|30 mins/week': { title: 'Power-Hour Plan', steps: [
+          'Set a $5–$10 monthly auto-donation to a vetted conservation nonprofit.',
+          'Switch your coffee cup and water bottle to reusable — 30 seconds a day.',
+          'Sign one e-petition or send one pre-written email a week for wildlife policy.',
+        ] },
+        'Busy Working Adult/Shift Worker|A few hours on weekends': { title: 'Weekend Steward Plan', steps: [
+          'Volunteer a weekend morning at a coastal or forest clean-up or wildlife center.',
+          'Make one wildlife-friendly grocery swap each week (sustainable seafood, less palm oil).',
+          'Watch one conservation documentary and share it with your team or family.',
+        ] },
+        'Busy Working Adult/Shift Worker|Direct financial support/Lifestyle shifts': { title: 'Invest in the Wild Plan', steps: [
+          'Create a monthly giving plan to one trusted group (WWF, Rainforest Trust, etc.).',
+          'Shift investments or retirement funds to options that exclude deforestation and wildlife harm.',
+          'Offset your commute or travel carbon, and choose eco-certified products.',
+        ] },
+        'Retired/Flexible Schedule|30 mins/week': { title: 'Voice for the Wild Plan', steps: [
+          'Write a short letter or email to a lawmaker once a month about wildlife protection.',
+          'Join an online citizen-science project (count birds or turtles) for 30 minutes a week.',
+          'Call or message your local representative about a species you care about.',
+        ] },
+        'Retired/Flexible Schedule|A few hours on weekends': { title: 'Community Champion Plan', steps: [
+          'Volunteer as a docent or guide at a zoo, aquarium, or nature reserve.',
+          'Help organize community clean-ups or tree-planting events in your area.',
+          'Mentor a young person or classroom on an endangered-species project.',
+        ] },
+        'Retired/Flexible Schedule|Direct financial support/Lifestyle shifts': { title: 'Legacy Protector Plan', steps: [
+          'Include a wildlife charity in your will or as a beneficiary.',
+          'Donate to an "adopt an animal" or ranger-support program.',
+          'Make your garden wildlife-friendly — native plants, a water source, no pesticides.',
+        ] },
+      },
+    };
+
+    // ============ Nav: smooth-scroll helper ============
+    const Nav = {
+      init() {
+        document.querySelectorAll('[data-scroll-to]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const target = document.getElementById(btn.dataset.scrollTo);
+            if (target) target.scrollIntoView({ behavior: 'smooth' });
+          });
+        });
+      },
+    };
+
+    // ============ Fx: wave particles + hero turtle blur-on-scroll ============
+    const Fx = {
+      particles: null, pctx: null, parts: [], pRaf: 0, W: 0, H: 0,
+
+      init() {
+        this.setupParticles();
+        this.setupScrollBlur();
+      },
+
+      setupParticles() {
+        this.particles = document.getElementById('particles');
+        this.pctx = this.particles.getContext('2d');
+        this.sizeParticles();
+        window.addEventListener('resize', () => this.sizeParticles());
+        for (let i = 0; i < 40; i++) this.parts.push(this.newParticle());
+        const tick = () => {
+          if (document.hidden) { this.pRaf = requestAnimationFrame(tick); return; }
+          this.pLoop();
+          this.pRaf = requestAnimationFrame(tick);
+        };
+        this.pRaf = requestAnimationFrame(tick);
+      },
+
+      sizeParticles() {
+        const dpr = window.devicePixelRatio || 1;
+        this.W = window.innerWidth; this.H = window.innerHeight;
+        this.particles.width = this.W * dpr; this.particles.height = this.H * dpr;
+        this.pctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      },
+
+      newParticle() {
+        return { x: Math.random() * this.W, y: this.H + 10, r: 1 + Math.random() * 3.5, vy: 10 + Math.random() * 24, phase: Math.random() * Math.PI * 2, amp: 6 + Math.random() * 16 };
+      },
+
+      pLoop() {
+        this.pctx.clearRect(0, 0, this.W, this.H);
+        this.parts.forEach((p) => {
+          p.y -= p.vy * 0.016;
+          p.phase += 0.02;
+          const x = p.x + Math.sin(p.phase) * p.amp;
+          if (p.y < -12) { Object.assign(p, this.newParticle()); p.y = this.H + 10; }
+          this.pctx.beginPath();
+          this.pctx.arc(x, p.y, p.r, 0, Math.PI * 2);
+          this.pctx.fillStyle = 'rgba(13, 148, 136, 0.18)';
+          this.pctx.fill();
+        });
+      },
+
+      setupScrollBlur() {
+        const turtle = document.getElementById('hero-turtle');
+        if (!turtle) return;
+        let ticking = false;
+        const update = () => {
+          const y = window.scrollY;
+          turtle.style.filter = `blur(${Math.min(12, y / 50)}px)`;
+          turtle.style.opacity = String(Math.max(0, 1 - y / 500));
+          ticking = false;
+        };
+        window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+      },
+    };
+
+    // ============ Cards: grid of cards that open a detail modal ============
+    const Cards = {
+      lastFocus: null,
+
+      render(containerId) {
+        const grid = document.getElementById(containerId);
+        grid.innerHTML = DATA.animals.map((a) => `
+          <button type="button" class="card-btn group flex flex-col overflow-hidden rounded-xl bg-white border border-slate-200 shadow-md hover:shadow-xl hover:-translate-y-1.5 transition focus:outline-none focus-visible:ring-4 focus-visible:ring-teal-300 text-center" data-animal="${a.id}" aria-haspopup="dialog" style="aspect-ratio: 5 / 7;">
+            <div class="flex-1 flex items-center justify-center" style="background:${a.color}">
+              <span class="text-8xl drop-shadow-lg">${a.emoji}</span>
+            </div>
+            <div class="flex-[2] flex flex-col items-center justify-center gap-2 px-4 py-3">
+              <h3 class="font-display text-xl font-bold text-slate-800 leading-snug">${a.name}</h3>
+              <p class="text-base italic text-slate-500 leading-relaxed">${a.species}</p>
+              <span class="px-3 py-1 rounded-full text-sm font-bold text-white ${a.statusClass === 'red' ? 'bg-rose-500' : 'bg-orange-500'}">${a.status}</span>
+              <span class="mt-2 text-xs font-semibold text-slate-400 group-hover:text-green-600 transition">Tap to open ↦</span>
+            </div>
+          </button>
+        `).join('');
+
+        grid.querySelectorAll('.card-btn').forEach((btn) => {
+          btn.addEventListener('click', () => this.open(btn.dataset.animal));
+        });
+
+        document.getElementById('modal-close').addEventListener('click', () => this.close());
+        document.getElementById('modal-backdrop').addEventListener('click', (e) => { if (e.target.id === 'modal-backdrop') this.close(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') this.close(); });
+      },
+
+      open(id) {
+        const a = DATA.animals.find((x) => x.id === id);
+        if (!a) return;
+        this.lastFocus = document.activeElement;
+        const img = document.getElementById('modal-image');
+        const emoji = document.getElementById('modal-emoji');
+        emoji.textContent = a.emoji;
+        emoji.classList.add('hidden');
+        img.style.display = '';
+        img.src = a.image;
+        img.alt = a.name;
+        img.onerror = () => { img.style.display = 'none'; emoji.classList.remove('hidden'); emoji.classList.add('flex'); };
+
+        document.getElementById('modal-name').textContent = a.name;
+        const statusEl = document.getElementById('modal-status');
+        statusEl.textContent = a.status;
+        statusEl.className = 'px-3 py-1 rounded-full text-xs font-bold text-white ' + (a.statusClass === 'red' ? 'bg-rose-500' : 'bg-orange-500');
+        document.getElementById('modal-species').textContent = a.species;
+        document.getElementById('modal-credit').textContent = 'Photo: ' + a.imageCredit;
+        document.getElementById('modal-facts').innerHTML = a.facts.map((f) => `<li>${f}</li>`).join('');
+
+        const backdrop = document.getElementById('modal-backdrop');
+        backdrop.classList.remove('hidden');
+        backdrop.classList.add('flex');
+      },
+
+      close() {
+        const backdrop = document.getElementById('modal-backdrop');
+        backdrop.classList.add('hidden');
+        backdrop.classList.remove('flex');
+        if (this.lastFocus) this.lastFocus.focus();
+      },
+    };
+
+    // ============ Map: inline SVG world map with per-species dots ============
+    const Map = {
+      // Simplified continent outlines as [lng, lat] polygons (stylized coastlines, accurate positions)
+      continents: [
+        [[-168,66],[-150,70],[-130,70],[-110,72],[-90,74],[-70,70],[-60,58],[-55,50],[-65,46],[-70,42],[-75,36],[-80,31],[-82,26],[-90,30],[-92,21],[-84,14],[-83,8],[-79,9],[-82,15],[-92,17],[-98,21],[-105,24],[-110,25],[-114,30],[-118,34],[-122,39],[-124,43],[-124,49],[-128,54],[-135,58],[-150,60],[-163,62],[-168,66]],
+        [[-55,83],[-45,82],[-30,82],[-22,76],[-25,70],[-35,66],[-45,62],[-52,60],[-60,64],[-60,72],[-58,78],[-55,83]],
+        [[-77,8],[-75,11],[-70,12],[-60,9],[-52,5],[-50,0],[-44,-3],[-38,-5],[-35,-8],[-38,-13],[-40,-20],[-48,-28],[-53,-34],[-58,-39],[-65,-45],[-68,-52],[-72,-55],[-75,-50],[-73,-40],[-71,-30],[-75,-18],[-80,-7],[-77,8]],
+        [[-16,15],[-10,30],[-5,35],[10,37],[20,32],[32,31],[35,28],[33,20],[40,15],[45,11],[51,11],[48,3],[42,-2],[40,-8],[35,-15],[33,-22],[28,-33],[20,-35],[18,-30],[15,-22],[12,-15],[9,-5],[7,4],[5,10],[-5,8],[-10,6],[-15,12],[-16,15]],
+        [[-9,43],[-8,37],[-6,36],[0,38],[3,42],[6,44],[8,54],[5,58],[10,60],[15,56],[20,55],[25,60],[28,60],[30,70],[25,71],[18,70],[12,72],[8,71],[5,63],[8,58],[6,53],[0,50],[-2,45],[-9,43]],
+        [[30,70],[40,72],[55,71],[70,73],[90,75],[110,76],[130,72],[140,72],[160,70],[170,66],[180,65],[160,60],[150,55],[140,45],[130,42],[122,37],[118,32],[110,22],[105,18],[108,12],[105,5],[100,2],[98,8],[95,15],[90,22],[85,20],[80,15],[77,8],[72,10],[68,8],[66,12],[60,16],[55,18],[50,26],[45,30],[40,35],[35,35],[30,36],[28,42],[35,48],[30,55],[30,60],[30,70]],
+        [[100,6],[103,1],[104,-2],[106,-6],[109,-7],[114,-4],[117,-1],[116,4],[110,6],[105,3],[103,4],[100,6]],
+        [[114,-22],[122,-18],[130,-12],[136,-12],[142,-11],[146,-16],[150,-24],[153,-30],[150,-37],[145,-39],[140,-38],[135,-35],[130,-32],[125,-32],[118,-34],[114,-28],[113,-25],[114,-22]],
+        [[166,-47],[174,-41],[178,-37],[176,-40],[172,-45],[168,-47],[166,-47]],
+      ],
+
+      project(lng, lat) { return [(lng + 180) / 360 * 1000, (90 - lat) / 180 * 500]; },
+
+      init() { this.render(); },
+
+      render() {
+        const container = document.getElementById('map-container');
+        const path = (poly) => poly.map((p, i) => {
+          const [x, y] = this.project(p[0], p[1]);
+          return (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
+        }).join(' ') + ' Z';
+
+        const spots = DATA.animals.map((a) => ({ ...a, pts: a.dots.map((d) => this.project(d[0], d[1])) }));
+
+        container.innerHTML = `
+          <svg viewBox="0 0 1000 500" class="w-full h-auto" role="img" aria-label="World map showing where six endangered animals still live">
+            <rect x="0" y="0" width="1000" height="500" fill="#e0f2fe" />
+            ${this.continents.map((c) => `<path d="${path(c)}" fill="#bae6fd" stroke="#7dd3fc" stroke-width="1.5" stroke-linejoin="round" />`).join('')}
+            ${spots.map((s) => s.pts.map(([x, y]) => `
+              <g class="map-dot" data-animal="${s.id}" tabindex="0" role="button" aria-label="${s.name} — ${s.status}, ${s.population}">
+                <circle class="pulse" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="10" fill="${s.color}" />
+                <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" fill="${s.color}" stroke="#fff" stroke-width="1.5" />
+              </g>`).join('')).join('')}
+          </svg>
+          <div id="map-tooltip" class="map-tooltip hidden z-10 bg-white rounded-xl shadow-lg p-3 w-60 border border-slate-100"></div>
+        `;
+
+        document.getElementById('map-legend').innerHTML = DATA.animals.map((a) => `
+          <span class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <span class="w-3 h-3 rounded-full" style="background:${a.color}"></span> ${a.emoji} ${a.name}
+          </span>`).join('');
+
+        const tooltip = document.getElementById('map-tooltip');
+        const hide = () => tooltip.classList.add('hidden');
+        container.querySelectorAll('.map-dot').forEach((el) => {
+          const show = () => this.showTooltip(el.dataset.animal, el);
+          el.addEventListener('mouseenter', show);
+          el.addEventListener('focus', show);
+          el.addEventListener('mouseleave', hide);
+          el.addEventListener('blur', hide);
+        });
+      },
+
+      showTooltip(id, el) {
+        const a = DATA.animals.find((x) => x.id === id);
+        const tip = document.getElementById('map-tooltip');
+        tip.innerHTML = `
+          <div class="font-display font-bold text-slate-800">${a.emoji} ${a.name}</div>
+          <div class="text-xs font-bold ${a.statusClass === 'red' ? 'text-rose-500' : 'text-orange-500'}">${a.status}</div>
+          <div class="text-sm mt-1"><strong>Population:</strong> ${a.population}</div>
+          <div class="text-sm"><strong>Range:</strong> ${a.habitat}</div>`;
+        tip.classList.remove('hidden');
+        const dotRect = el.getBoundingClientRect();
+        const mapRect = document.getElementById('map-container').getBoundingClientRect();
+        tip.style.left = (dotRect.left - mapRect.left + dotRect.width / 2) + 'px';
+        tip.style.top = (dotRect.top - mapRect.top - 6) + 'px';
+      },
+    };
+
+    // ============ Personality: "Which animal are you?" ============
+    const Personality = {
+      current: 0, scores: {}, pending: null,
+
+      init() { this.render(); },
+      reset() { this.current = 0; this.scores = {}; this.pending = null; },
+
+      render() {
+        const c = document.getElementById('personality-container');
+        const total = DATA.personality.questions.length;
+        if (this.current >= total) { this.renderResult(c); return; }
+        const q = DATA.personality.questions[this.current];
+        this.pending = null;
+        c.innerHTML = `
+          <div class="question-in">
+            <p class="text-sm font-bold text-teal-600 uppercase tracking-wide">Question ${this.current + 1} of ${total}</p>
+            <div class="w-full h-2 bg-slate-200 rounded-full mt-2 mb-4"><div class="h-2 bg-teal-500 rounded-full transition-all duration-500" style="width:${((this.current + 1) / total) * 100}%"></div></div>
+            <h4 class="font-display text-xl font-semibold text-slate-800 mb-4">${q.question}</h4>
+            <div id="personality-answers" class="space-y-3"></div>
+            <div class="flex items-center justify-between mt-5">
+              <button id="p-back" type="button" class="px-4 py-2 rounded-full bg-slate-200 text-slate-700 font-bold hover:bg-slate-300 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 ${this.current === 0 ? 'invisible' : ''}">← Back</button>
+              <button id="p-next" type="button" disabled class="px-6 py-2 rounded-full bg-green-600 text-white font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 disabled:cursor-not-allowed">Next →</button>
+            </div>
+            <div class="text-center mt-3">
+              <button id="p-restart" type="button" class="px-4 py-2 rounded-full bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400">Start over</button>
+            </div>
+          </div>
+        `;
+        const answersEl = document.getElementById('personality-answers');
+        const nextBtn = document.getElementById('p-next');
+        q.answers.forEach((ans) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'w-full text-left px-4 py-3 rounded-xl border-2 border-slate-200 bg-white hover:border-teal-400 hover:bg-teal-50 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400';
+          b.textContent = ans.text;
+          b.addEventListener('click', () => this.select(ans.animal, b, answersEl, nextBtn));
+          answersEl.appendChild(b);
+        });
+        document.getElementById('p-back').addEventListener('click', () => { if (this.current > 0) this.current -= 1; this.render(); });
+        document.getElementById('p-restart').addEventListener('click', () => { this.reset(); this.render(); });
+        nextBtn.addEventListener('click', () => {
+          if (!this.pending) return;
+          this.scores[this.pending] = (this.scores[this.pending] || 0) + 1;
+          this.pending = null;
+          this.current += 1;
+          this.render();
+        });
+      },
+
+      select(animal, btn, answersEl, nextBtn) {
+        this.pending = animal;
+        answersEl.querySelectorAll('button').forEach((b) => b.classList.remove('answer-selected'));
+        btn.classList.add('answer-selected');
+        nextBtn.disabled = false;
+      },
+
+      winner() {
+        let best = null, bestScore = -1;
+        DATA.animals.forEach((a) => {
+          const s = this.scores[a.id] || 0;
+          if (s > bestScore) { bestScore = s; best = a; }
+        });
+        return best;
+      },
+
+      renderResult(c) {
+        const animal = this.winner();
+        const res = DATA.personality.results[animal.id] || { title: 'One of a kind', blurb: 'You are your own unique mix of wild traits.' };
+        c.innerHTML = `
+          <div class="fade-in text-center">
+            <p class="text-sm font-bold text-teal-600 uppercase tracking-wide">Your animal match is…</p>
+            <span class="text-7xl block mt-3">${animal.emoji}</span>
+            <h4 class="font-display text-3xl font-bold text-slate-800 mt-2">${animal.name}</h4>
+            <p class="font-display text-lg font-semibold text-teal-600">${res.title}</p>
+            <p class="text-slate-600 mt-3 max-w-md mx-auto">${res.blurb}</p>
+            <div class="mt-6 flex flex-wrap justify-center gap-3">
+              <button id="p-learn" type="button" class="px-6 py-3 rounded-full bg-teal-600 text-white font-bold hover:bg-teal-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400">Learn about the ${animal.name}</button>
+              <button id="p-again" type="button" class="px-6 py-3 rounded-full bg-green-600 text-white font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400">Retake quiz</button>
+            </div>
+          </div>
+        `;
+        document.getElementById('p-again').addEventListener('click', () => { this.reset(); this.render(); });
+        document.getElementById('p-learn').addEventListener('click', () => document.getElementById('animals').scrollIntoView({ behavior: 'smooth' }));
+      },
+    };
+
+    // ============ Tabs: switch between the two mini-games ============
+    const Tabs = {
+      init() {
+        const buttons = document.querySelectorAll('[data-tab]');
+        const panes = document.querySelectorAll('[data-pane]');
+        const activate = (name) => {
+          buttons.forEach((b) => {
+            const active = b.dataset.tab === name;
+            b.classList.toggle('tab-active', active);
+            b.classList.toggle('bg-slate-100', !active);
+            b.classList.toggle('text-slate-600', !active);
+            b.setAttribute('aria-selected', String(active));
+          });
+          panes.forEach((p) => p.classList.toggle('hidden', p.dataset.pane !== name));
+          if (name !== 'game' && typeof Game !== 'undefined') Game.pause();
+        };
+        buttons.forEach((b) => b.addEventListener('click', () => activate(b.dataset.tab)));
+        activate('game');
+      },
+    };
+
+    // ============ Game: "Heart of the Ocean" canvas game ============
+    const Game = {
+      canvas: null, ctx: null,
+      W: 800, H: 500,
+      running: false, paused: false, over: false,
+      player: { x: 400, y: 430, r: 24, speed: 280 },
+      items: [], hazards: [], bubbles: [],
+      score: 0, lives: 3, timeLeft: 60, highScore: 0,
+      keys: {},
+      lastTime: 0, spawnTimer: 0, hazardTimer: 0, invuln: 0,
+      raf: 0,
+
+      init() {
+        this.canvas = document.getElementById('game-canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.highScore = Number(localStorage.getItem('ecorescue_highscore') || 0);
+        this.setupCanvas();
+        window.addEventListener('resize', () => this.setupCanvas());
+        window.addEventListener('keydown', (e) => this.onKey(e, true));
+        window.addEventListener('keyup', (e) => this.onKey(e, false));
+        document.addEventListener('visibilitychange', () => { if (document.hidden && this.running) this.pause(); });
+        document.getElementById('game-start-btn').addEventListener('click', () => this.start());
+        document.getElementById('game-restart-btn').addEventListener('click', () => this.start());
+        this.renderHUD();
+        this.showScreen('start');
+      },
+
+      setupCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        this.canvas.width = this.W * dpr;
+        this.canvas.height = this.H * dpr;
+        this.canvas.style.width = '100%';
+        this.canvas.style.height = 'auto';
+        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        this.player.x = Math.min(this.player.x, this.W - this.player.r);
+        this.player.y = Math.min(this.player.y, this.H - this.player.r);
+      },
+
+      onKey(e, down) {
+        const map = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', a: 'left', d: 'right', w: 'up', s: 'down' };
+        const k = map[e.key];
+        if (!k) return;
+        if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(e.key)) e.preventDefault();
+        this.keys[k] = down;
+      },
+
+      showScreen(name) {
+        document.getElementById('game-start-screen').classList.toggle('hidden', name !== 'start');
+        document.getElementById('game-over-screen').classList.toggle('hidden', name !== 'over');
+        document.getElementById('game-overlay').classList.toggle('hidden', name === 'playing');
+        if (name === 'over') {
+          document.getElementById('game-final-score').textContent = this.score;
+          document.getElementById('game-final-high').textContent = this.highScore;
+        }
+      },
+
+      start() {
+        this.running = true; this.paused = false; this.over = false;
+        this.score = 0; this.lives = 3; this.timeLeft = 60;
+        this.items = []; this.hazards = []; this.bubbles = [];
+        this.spawnTimer = 0; this.hazardTimer = 0; this.invuln = 0;
+        this.player.x = this.W / 2; this.player.y = this.H - 60;
+        this.showScreen('playing');
+        this.renderHUD();
+        cancelAnimationFrame(this.raf);
+        this.lastTime = performance.now();
+        this.loop(this.lastTime);
+      },
+
+      pause() { this.paused = true; },
+
+      endGame() {
+        this.running = false; this.over = true;
+        cancelAnimationFrame(this.raf);
+        if (this.score > this.highScore) {
+          this.highScore = this.score;
+          localStorage.setItem('ecorescue_highscore', String(this.highScore));
+        }
+        this.renderHUD();
+        this.showScreen('over');
+      },
+
+      difficulty() { return 1 + ((60 - this.timeLeft) / 60) * 1.5; },
+
+      renderHUD() {
+        document.getElementById('game-score').textContent = this.score;
+        document.getElementById('game-timer').textContent = Math.ceil(this.timeLeft);
+        document.getElementById('game-lives').textContent = this.lives;
+        document.getElementById('game-highscore').textContent = this.highScore;
+      },
+
+      spawnItem() {
+        this.items.push({ x: 30 + Math.random() * (this.W - 60), y: -30, r: 16, vy: 60 * this.difficulty(), kind: 'heart', pts: 10 });
+      },
+
+      spawnHazard() {
+        const kinds = ['bag', 'bottle'];
+        const kind = kinds[Math.floor(Math.random() * kinds.length)];
+        this.hazards.push({ x: 30 + Math.random() * (this.W - 60), y: -30, r: 22, vy: 90 * this.difficulty(), kind });
+      },
+
+      loop(now) {
+        if (!this.running) return;
+        let dt = (now - this.lastTime) / 1000;
+        this.lastTime = now;
+        dt = Math.min(dt, 0.05);
+        if (!this.paused) this.update(dt);
+        this.draw();
+        if (this.running) this.raf = requestAnimationFrame((t) => this.loop(t));
+      },
+
+      update(dt) {
+        this.timeLeft -= dt;
+        if (this.timeLeft <= 0) { this.timeLeft = 0; this.renderHUD(); this.endGame(); return; }
+
+        const p = this.player;
+        if (this.keys.left) p.x -= p.speed * dt;
+        if (this.keys.right) p.x += p.speed * dt;
+        if (this.keys.up) p.y -= p.speed * dt;
+        if (this.keys.down) p.y += p.speed * dt;
+        p.x = Math.max(p.r, Math.min(this.W - p.r, p.x));
+        p.y = Math.max(p.r, Math.min(this.H - p.r, p.y));
+
+        if (this.invuln > 0) this.invuln -= dt;
+
+        this.spawnTimer -= dt;
+        if (this.spawnTimer <= 0) { this.spawnItem(); this.spawnTimer = Math.max(0.45, 1.0 / this.difficulty()); }
+        this.hazardTimer -= dt;
+        if (this.hazardTimer <= 0) { this.spawnHazard(); this.hazardTimer = Math.max(0.8, 1.7 / this.difficulty()); }
+
+        if (Math.random() < 0.05) this.bubbles.push({ x: Math.random() * this.W, y: this.H + 10, r: 2 + Math.random() * 6, vy: 40 + Math.random() * 60 });
+
+        this.items.forEach((it) => { it.y += it.vy * dt; });
+        this.items = this.items.filter((it) => {
+          if (it.y > this.H + 40) return false;
+          if (Math.hypot(it.x - p.x, it.y - p.y) < it.r + p.r) { this.score += it.pts; this.renderHUD(); return false; }
+          return true;
+        });
+
+        this.hazards.forEach((h) => { h.y += h.vy * dt; });
+        this.hazards = this.hazards.filter((h) => {
+          if (h.y > this.H + 40) return true;
+          if (Math.hypot(h.x - p.x, h.y - p.y) < h.r + p.r && this.invuln <= 0) {
+            this.lives -= 1; this.invuln = 1.5; this.renderHUD();
+            if (this.lives <= 0) { this.endGame(); return false; }
+          }
+          return true;
+        });
+
+        this.bubbles.forEach((b) => { b.y -= b.vy * dt; });
+        this.bubbles = this.bubbles.filter((b) => b.y > -20);
+        this.renderHUD();
+      },
+
+      draw() {
+        const c = this.ctx;
+        const g = c.createLinearGradient(0, 0, 0, this.H);
+        g.addColorStop(0, '#0ea5e9'); g.addColorStop(1, '#0c4a6e');
+        c.fillStyle = g; c.fillRect(0, 0, this.W, this.H);
+
+        c.fillStyle = 'rgba(255,255,255,0.25)';
+        this.bubbles.forEach((b) => { c.beginPath(); c.arc(b.x, b.y, b.r, 0, Math.PI * 2); c.fill(); });
+
+        this.items.forEach((it) => this.drawItem(c, it));
+        this.hazards.forEach((h) => this.drawHazard(c, h));
+        this.drawTurtle(c, this.player, this.invuln > 0);
+      },
+
+      drawItem(c, it) {
+        c.save(); c.translate(it.x, it.y);
+        c.fillStyle = '#ef4444';
+        this.drawHeart(c, 0, 0, it.r);
+        c.fillStyle = 'rgba(255,255,255,0.55)';
+        c.beginPath(); c.arc(-it.r * 0.28, -it.r * 0.35, it.r * 0.16, 0, Math.PI * 2); c.fill();
+        c.restore();
+      },
+
+      drawHeart(c, x, y, s) {
+        c.beginPath();
+        c.moveTo(x, y + s * 0.9);
+        c.bezierCurveTo(x - s, y + s * 0.3, x - s * 0.85, y - s * 0.5, x, y - s * 0.15);
+        c.bezierCurveTo(x + s * 0.85, y - s * 0.5, x + s, y + s * 0.3, x, y + s * 0.9);
+        c.fill();
+      },
+
+      drawHazard(c, h) {
+        c.save(); c.translate(h.x, h.y);
+        if (h.kind === 'bag') {
+          c.fillStyle = '#1f2937';
+          c.beginPath();
+          c.moveTo(-13, -10);
+          c.quadraticCurveTo(0, -16, 13, -10);
+          c.lineTo(16, 10);
+          c.quadraticCurveTo(0, 14, -16, 10);
+          c.closePath();
+          c.fill();
+          c.strokeStyle = '#111827'; c.lineWidth = 2; c.stroke();
+          c.fillStyle = '#6b7280';
+          c.fillRect(-4, -13, 8, 5);
+        } else {
+          c.fillStyle = '#e2e8f0';
+          c.fillRect(-9, -8, 18, 24);
+          c.fillStyle = '#38bdf8';
+          c.fillRect(-4, -18, 8, 10);
+          c.fillStyle = '#94a3b8';
+          c.fillRect(-9, 2, 18, 6);
+          c.strokeStyle = '#cbd5e1'; c.lineWidth = 2;
+          c.strokeRect(-9, -8, 18, 24);
+        }
+        c.restore();
+      },
+
+      drawTurtle(c, p, blink) {
+        if (blink && Math.floor(performance.now() / 120) % 2 === 0) return;
+        c.save(); c.translate(p.x, p.y);
+        c.fillStyle = '#059669';
+        c.beginPath(); c.ellipse(-20, 6, 12, 5, -0.5, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.ellipse(20, 6, 12, 5, 0.5, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#10b981';
+        c.beginPath(); c.ellipse(0, 0, 22, 17, 0, 0, Math.PI * 2); c.fill();
+        c.strokeStyle = '#047857'; c.lineWidth = 2; c.stroke();
+        c.beginPath(); c.arc(0, 0, 10, 0, Math.PI * 2); c.stroke();
+        c.fillStyle = '#34d399';
+        c.beginPath(); c.arc(0, -20, 8, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#0c4a6e';
+        c.beginPath(); c.arc(3, -21, 2, 0, Math.PI * 2); c.fill();
+        c.restore();
+      },
+    };
+
+    // ============ Triage: step-by-step "Wildlife Clinic" ============
+    const Triage = {
+      steps: [
+        { tool: 'sponge', prompt: 'This turtle is covered in oil. Clean the oil off its shell.', note: 'Oiled shell', anim: 'scrub' },
+        { tool: 'medicine', prompt: 'Apply medicine to soothe the irritated skin.', note: 'Skin is sore', anim: 'pulse' },
+        { tool: 'bandage', prompt: 'Bandage the wound to protect it from infection.', note: 'Needs a clean dressing', anim: 'wrap' },
+        { tool: 'food', prompt: 'Give the turtle food and water to regain strength.', note: 'Ready to eat', anim: 'bounce' },
+      ],
+      tools: [
+        { id: 'sponge', emoji: '🧽', label: 'Sponge' },
+        { id: 'medicine', emoji: '💊', label: 'Medicine' },
+        { id: 'bandage', emoji: '🩹', label: 'Bandage' },
+        { id: 'food', emoji: '🥬', label: 'Food' },
+      ],
+      started: false, current: 0, busy: false,
+
+      init() { this.render(); },
+
+      start() {
+        this.started = true; this.current = 0; this.busy = false;
+        this.render();
+      },
+
+      render() {
+        const c = document.getElementById('triage-container');
+        if (!this.started) { this.renderTitle(c); return; }
+        if (this.current >= this.steps.length) { this.renderDone(c); return; }
+        const s = this.steps[this.current];
+        c.innerHTML = `
+          <div class="question-in">
+            <div class="text-center mb-4">
+              <div class="relative inline-block">
+                <span id="triage-turtle" class="text-6xl inline-block">🐢</span>
+              </div>
+              <p class="mt-2 text-slate-600 font-semibold">${s.note}</p>
+            </div>
+            <p class="text-lg text-slate-700 mb-4 text-center">Step ${this.current + 1} of ${this.steps.length}: ${s.prompt}</p>
+            <div id="triage-tools" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+            <p id="triage-feedback" class="text-center mt-4 min-h-[1.5rem] font-semibold"></p>
+            <div id="triage-progress" class="flex justify-center gap-1 mt-3"></div>
+            <div class="text-center mt-4">
+              <button id="triage-restart" type="button" class="px-5 py-2 rounded-full bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400">↻ Restart</button>
+            </div>
+          </div>
+        `;
+        const toolsEl = document.getElementById('triage-tools');
+        this.tools.slice().sort(() => Math.random() - 0.5).forEach((t) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'bg-white border-2 border-slate-200 rounded-2xl p-4 hover:border-teal-400 hover:shadow-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400';
+          b.innerHTML = `<span class="text-4xl block">${t.emoji}</span><span class="text-sm font-bold text-slate-700">${t.label}</span>`;
+          b.addEventListener('click', () => this.choose(t.id));
+          toolsEl.appendChild(b);
+        });
+        this.renderProgress();
+        document.getElementById('triage-restart').addEventListener('click', () => this.start());
+      },
+
+      renderTitle(c) {
+        c.innerHTML = `
+          <div class="question-in text-center">
+            <h4 class="font-display text-2xl font-bold text-emerald-700">🏥 Wildlife Clinic Triage</h4>
+            <p class="text-slate-600 mt-2 max-w-md mx-auto">A sea turtle was rescued — oiled and tangled. Treat it step by step to send it home healthy.</p>
+            <div class="mt-4 flex flex-wrap justify-center gap-2 text-sm font-bold text-slate-600">
+              <span class="bg-white rounded-xl px-3 py-2 border border-slate-200">🧽 Sponge</span>
+              <span class="bg-white rounded-xl px-3 py-2 border border-slate-200">💊 Medicine</span>
+              <span class="bg-white rounded-xl px-3 py-2 border border-slate-200">🩹 Bandage</span>
+              <span class="bg-white rounded-xl px-3 py-2 border border-slate-200">🥬 Food</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-3 max-w-sm mx-auto">The tools are mixed up each round — pick the right one for each symptom. Wrong tool? No penalty.</p>
+            <button id="triage-start" type="button" class="mt-6 px-8 py-3 rounded-full bg-green-600 text-white font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400">Start treatment</button>
+          </div>
+        `;
+        document.getElementById('triage-start').addEventListener('click', () => this.start());
+      },
+
+      renderProgress() {
+        const el = document.getElementById('triage-progress');
+        if (!el) return;
+        el.innerHTML = this.steps.map((s, i) =>
+          `<span class="w-3 h-3 rounded-full ${i < this.current ? 'bg-emerald-500' : i === this.current ? 'bg-teal-500' : 'bg-slate-300'}"></span>`
+        ).join('');
+      },
+
+      choose(toolId) {
+        if (this.busy) return;
+        const s = this.steps[this.current];
+        const fb = document.getElementById('triage-feedback');
+        if (toolId === s.tool) {
+          this.busy = true;
+          fb.textContent = '✅ ' + this.correctNote(toolId);
+          fb.className = 'text-emerald-600 text-center mt-4 min-h-[1.5rem] font-semibold';
+          this.animateTool(s, toolId);
+          setTimeout(() => { this.current += 1; this.busy = false; this.render(); }, 950);
+        } else {
+          fb.textContent = '❌ Not quite — ' + this.hintFor(toolId);
+          fb.className = 'text-rose-500 text-center mt-4 min-h-[1.5rem] font-semibold';
+        }
+      },
+
+      animateTool(s, toolId) {
+        const turtle = document.getElementById('triage-turtle');
+        if (!turtle) return;
+        const tool = this.tools.find((t) => t.id === toolId);
+        const wrap = turtle.parentElement;
+        const fx = document.createElement('span');
+        fx.className = 'tool-float';
+        fx.style.cssText = 'position:absolute; left:50%; top:-8px; margin-left:-18px; font-size:2.25rem; pointer-events:none;';
+        fx.textContent = tool.emoji;
+        wrap.appendChild(fx);
+        setTimeout(() => fx.remove(), 900);
+        turtle.classList.remove('anim-scrub', 'anim-pulse', 'anim-bounce', 'anim-wrap');
+        turtle.classList.add('anim-' + s.anim);
+      },
+
+      correctNote(toolId) {
+        return { sponge: 'Great — the oil is washed away!', medicine: 'Good — the skin is soothed.', bandage: 'Nice — the wound is protected.', food: 'Perfect — it is re-energized!' }[toolId] || 'Well done!';
+      },
+
+      hintFor(toolId) {
+        return { sponge: 'the sponge is for washing off oil and grime.', medicine: 'medicine soothes sore, irritated skin.', bandage: 'the bandage covers and protects a wound.', food: 'food and water give the turtle its strength back.' }[toolId] || 'try a different tool.';
+      },
+
+      renderDone(c) {
+        c.innerHTML = `
+          <div class="question-in text-center">
+            <span class="text-7xl">🌊🐢</span>
+            <h4 class="font-display text-2xl font-semibold text-emerald-700 mt-4">Released back to the ocean!</h4>
+            <p class="text-slate-600 mt-2 max-w-md mx-auto">You cleaned, medicated, bandaged, and fed the turtle. Thanks to you, it's healthy enough to swim home. 💚</p>
+            <button id="triage-restart" type="button" class="mt-6 px-6 py-3 rounded-full bg-green-600 text-white font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400">Treat another patient</button>
+          </div>
+        `;
+        document.getElementById('triage-restart').addEventListener('click', () => this.start());
+      },
+    };
+
+    // ============ Quiz: 5-question knowledge check ============
+    const Quiz = {
+      current: 0, score: 0, locked: false,
+
+      init() { this.render(); },
+
+      render() {
+        const c = document.getElementById('quiz-container');
+        if (this.current >= DATA.quiz.length) { this.renderSummary(c); return; }
+        const q = DATA.quiz[this.current];
+        this.locked = false;
+        c.innerHTML = `
+          <div class="question-in">
+            <p class="text-sm font-bold text-teal-600 uppercase tracking-wide">Question ${this.current + 1} of ${DATA.quiz.length}</p>
+            <h4 class="font-display text-xl font-semibold text-slate-800 mt-1 mb-4">${q.question}</h4>
+            <div id="quiz-answers" class="space-y-3"></div>
+            <p id="quiz-fact" class="hidden mt-4 p-3 rounded-xl bg-sky-50 text-sky-800 text-sm"></p>
+            <div class="flex items-center justify-between mt-5">
+              <span id="quiz-score" class="text-sm font-bold text-slate-600">Score: ${this.score} correct</span>
+              <button id="quiz-next" type="button" disabled class="px-6 py-2 rounded-full bg-green-600 text-white font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 disabled:cursor-not-allowed">Next →</button>
+            </div>
+          </div>
+        `;
+        const answersEl = document.getElementById('quiz-answers');
+        q.answers.forEach((a, i) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'w-full text-left px-4 py-3 rounded-xl border-2 border-slate-200 bg-white hover:border-teal-400 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400';
+          b.innerHTML = `<span class="font-bold text-teal-600 mr-2">${String.fromCharCode(65 + i)}.</span>${a}`;
+          b.addEventListener('click', () => this.answer(i, b));
+          answersEl.appendChild(b);
+        });
+        document.getElementById('quiz-next').addEventListener('click', () => { this.current += 1; this.render(); });
+      },
+
+      answer(i, btn) {
+        if (this.locked) return;
+        this.locked = true;
+        const q = DATA.quiz[this.current];
+        const buttons = document.querySelectorAll('#quiz-answers button');
+        const fact = document.getElementById('quiz-fact');
+        const next = document.getElementById('quiz-next');
+
+        buttons.forEach((b, idx) => {
+          b.disabled = true;
+          if (idx === q.correctIndex) b.classList.add('answer-correct');
+        });
+        if (i === q.correctIndex) {
+          this.score += 1;
+          fact.textContent = '✅ Correct! ' + q.fact;
+        } else {
+          btn.classList.add('answer-wrong');
+          fact.textContent = '❌ Not quite. ' + q.fact;
+        }
+        fact.classList.remove('hidden');
+        document.getElementById('quiz-score').textContent = `Score: ${this.score} correct`;
+        next.disabled = false;
+      },
+
+      renderSummary(c) {
+        const total = DATA.quiz.length;
+        let title, msg, emoji;
+        if (this.score === total) { title = 'Ocean Champion!'; emoji = '🏆'; msg = 'A perfect score — you know your endangered species inside out!'; }
+        else if (this.score >= 3) { title = 'Wildlife Ranger!'; emoji = '🦸'; msg = 'Great work — a little more and you will be a full champion.'; }
+        else if (this.score >= 1) { title = 'Junior Explorer'; emoji = '🔍'; msg = 'Good start — flip back through the cards and try again!'; }
+        else { title = 'Curious Beginner'; emoji = '🌱'; msg = 'Every expert starts here — read the fact cards and give it another go.'; }
+        c.innerHTML = `
+          <div class="text-center">
+            <span class="text-6xl">${emoji}</span>
+            <h4 class="font-display text-2xl font-semibold text-slate-800 mt-3">${title}</h4>
+            <p class="font-display text-4xl font-bold text-teal-600 mt-2">${this.score} / ${total}</p>
+            <p class="text-slate-600 mt-2 max-w-md mx-auto">${msg}</p>
+            <button id="quiz-restart" type="button" class="mt-6 px-6 py-3 rounded-full bg-green-600 text-white font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400">Try again</button>
+          </div>
+        `;
+        document.getElementById('quiz-restart').addEventListener('click', () => { this.current = 0; this.score = 0; this.render(); });
+      },
+    };
+
+    // ============ Matchmaker: 2-question action quiz → 3-step plan ============
+    const Matchmaker = {
+      stages: [
+        { key: 'lifeStage', question: 'What age / life stage are you in?', options: ['Primary/Middle School', 'High School/College', 'Busy Working Adult/Shift Worker', 'Retired/Flexible Schedule'] },
+        { key: 'time', question: 'How much time can you realistically give?', options: ['30 mins/week', 'A few hours on weekends', 'Direct financial support/Lifestyle shifts'] },
+      ],
+      stage: 0, lifeStage: null, time: null,
+
+      init() { this.render(); },
+
+      render() {
+        const c = document.getElementById('matchmaker-container');
+        if (this.stage >= this.stages.length) { this.renderResult(c); return; }
+        const s = this.stages[this.stage];
+        c.innerHTML = `
+          <p class="text-sm font-bold text-teal-600 uppercase tracking-wide">Question ${this.stage + 1} of 2</p>
+          <h4 class="font-display text-xl font-semibold text-slate-800 mt-1 mb-4">${s.question}</h4>
+          <div id="matchmaker-options" class="grid sm:grid-cols-2 gap-3"></div>
+        `;
+        const optsEl = document.getElementById('matchmaker-options');
+        s.options.forEach((o) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'px-4 py-4 rounded-2xl border-2 border-slate-200 bg-white text-left font-bold text-slate-700 hover:border-teal-400 hover:shadow-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400';
+          b.textContent = o;
+          b.addEventListener('click', () => { this[s.key] = o; this.stage += 1; this.render(); });
+          optsEl.appendChild(b);
+        });
+      },
+
+      renderResult(c) {
+        const key = this.lifeStage + '|' + this.time;
+        const result = DATA.matchmaker[key] || {
+          title: 'Your action plan',
+          steps: ['Learn about an endangered species near you.', 'Support a vetted conservation group.', 'Share what you learned with a friend.'],
+        };
+        c.innerHTML = `
+          <div class="fade-in">
+            <div class="text-center mb-5">
+              <span class="text-5xl">🎯</span>
+              <h4 class="font-display text-2xl font-semibold text-emerald-700 mt-3">${result.title}</h4>
+              <p class="text-slate-600 mt-1">Because you're a <span class="font-bold">${this.lifeStage}</span> with <span class="font-bold">${this.time}</span></p>
+            </div>
+            <ol class="space-y-3">
+              ${result.steps.map((s, i) => `
+                <li class="flex gap-3 items-start bg-white rounded-2xl p-4 border border-emerald-100 shadow-sm">
+                  <span class="flex-none w-8 h-8 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center">${i + 1}</span>
+                  <span class="text-slate-700">${s}</span>
+                </li>`).join('')}
+            </ol>
+            <div class="text-center mt-6">
+              <button id="matchmaker-restart" type="button" class="px-6 py-3 rounded-full bg-green-600 text-white font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400">Start over</button>
+            </div>
+          </div>
+        `;
+        document.getElementById('matchmaker-restart').addEventListener('click', () => { this.stage = 0; this.lifeStage = null; this.time = null; this.render(); });
+      },
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      Nav.init();
+      Fx.init();
+      Cards.render('animal-grid');
+      Map.init();
+      Personality.init();
+      Game.init();
+      Tabs.init();
+      Triage.init();
+      Quiz.init();
+      Matchmaker.init();
+    });
+  </script>
+</body>
+</html>
