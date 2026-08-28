@@ -9,9 +9,24 @@
     tailwind.config = {
       theme: {
         extend: {
+          colors: {
+            paper: '#F3E9D4',
+            cream: '#EDE1C6',
+            card: '#FFFDF5',
+            ink: '#2C2A24',
+            'ink-soft': '#5C5646',
+            forest: '#33553A',
+            'forest-deep': '#223B28',
+            sage: '#8A9A6B',
+            clay: '#C05F3C',
+            'clay-deep': '#9C4527',
+            amber: '#D9A13B',
+            water: '#4E7C83',
+            'water-deep': '#2F5157',
+          },
           fontFamily: {
-            display: ['Fredoka', 'Nunito', 'sans-serif'],
-            body: ['Nunito', 'system-ui', 'sans-serif'],
+            display: ['Fraunces', 'Georgia', 'serif'],
+            body: ['Nunito Sans', 'Nunito', 'system-ui', 'sans-serif'],
           },
         },
       },
@@ -19,10 +34,10 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
     html { scroll-behavior: smooth; }
-    body { font-family: 'Nunito', system-ui, sans-serif; }
+    body { font-family: 'Nunito Sans', system-ui, sans-serif; }
 
     /* Hero drifting wave particles (fallback for browsers without the canvas) */
     @keyframes driftUp { from { transform: translateY(0); opacity: 0.85; } to { transform: translateY(-110vh); opacity: 0; } }
@@ -38,18 +53,31 @@
     .map-tooltip { position: absolute; transform: translate(-50%, -100%); pointer-events: none; }
 
     /* Active tab pill */
-    .tab-active { background: linear-gradient(135deg, #059669, #0d9488); color: #fff; box-shadow: 0 8px 20px rgba(5, 150, 105, 0.35); }
+    .tab-active { background: linear-gradient(135deg, #33553A, #4E7C83); color: #FFFDF5; box-shadow: 0 8px 20px rgba(51, 85, 58, 0.35); }
+
+    /* Hero "Wildkind" title — animal photos embedded inside each letter */
+    .title-letter {
+      display: inline-block;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      background-size: cover;
+      background-position: center;
+      text-shadow: none;
+      filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
+    }
 
     /* Fade-in for result cards */
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
     .fade-in { animation: fadeIn 0.4s ease both; }
 
     /* Answer feedback states (override Tailwind border/bg) */
-    .answer-correct { background: #10b981 !important; color: #fff !important; border-color: #059669 !important; }
-    .answer-wrong { background: #f43f5e !important; color: #fff !important; border-color: #e11d48 !important; }
+    .answer-correct { background: #33553A !important; color: #FFFDF5 !important; border-color: #223B28 !important; }
+    .answer-wrong { background: #C05F3C !important; color: #FFFDF5 !important; border-color: #9C4527 !important; }
 
     /* Selected answer state (personality quiz) */
-    .answer-selected { background: #0d9488 !important; color: #fff !important; border-color: #0f766e !important; box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35); }
+    .answer-selected { background: #4E7C83 !important; color: #FFFDF5 !important; border-color: #2F5157 !important; box-shadow: 0 4px 14px rgba(78, 124, 131, 0.35); }
 
     /* Smooth question transition */
     @keyframes questionIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
@@ -68,35 +96,35 @@
     .tool-float { animation: toolFloat 0.9s ease forwards; }
   </style>
 </head>
-<body class="font-body text-slate-800 antialiased bg-gradient-to-b from-sky-50 via-white to-emerald-50">
+<body class="font-body text-ink antialiased bg-gradient-to-b from-paper via-card to-paper">
 
-  <!-- Fixed wave-particle background -->
+  <!-- Fixed wandering-footprint background -->
   <canvas id="particles" class="fixed inset-0 z-0 pointer-events-none"></canvas>
 
   <main class="relative z-10">
 
     <!-- ============ 1. HERO ============ -->
-    <section id="hero" class="relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-500 to-sky-600 text-white">
+    <section id="hero" class="relative overflow-hidden bg-gradient-to-br from-forest-deep via-forest to-water text-card">
       <div class="max-w-5xl mx-auto px-6 pt-14 pb-24 md:pt-20 md:pb-32 text-center relative z-10">
         <img id="hero-turtle"
              src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Green_Sea_Turtle_grazing_seagrass.jpg/960px-Green_Sea_Turtle_grazing_seagrass.jpg"
              alt="A green sea turtle swimming underwater"
-             class="mx-auto w-60 h-60 md:w-80 md:h-80 object-cover rounded-full border-4 border-white/40 shadow-2xl will-change-[filter,opacity]" />
+             class="mx-auto w-60 h-60 md:w-80 md:h-80 object-cover rounded-full border-4 border-paper/40 shadow-2xl will-change-[filter,opacity]" />
 
-        <h1 class="font-display text-5xl md:text-7xl font-bold mt-6">Wildkind</h1>
-        <p class="mt-4 text-lg md:text-xl text-emerald-50 max-w-2xl mx-auto">Learn about endangered animals, see where they still live, meet your animal twin, and discover exactly how <em>you</em> can help.</p>
+        <h1 id="hero-title" class="font-display text-5xl md:text-7xl font-black mt-6 tracking-tight" aria-label="Wildkind">Wildkind</h1>
+        <p class="mt-4 text-lg md:text-xl text-paper/90 max-w-2xl mx-auto">Learn about endangered animals, see where they still live, meet your animal twin, and discover exactly how <em>you</em> can help.</p>
 
         <div class="mt-8 flex flex-wrap justify-center gap-3">
-          <button data-scroll-to="animals" type="button" class="px-5 py-3 rounded-full bg-white text-emerald-700 font-bold hover:bg-emerald-50 hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Meet the Animals</button>
-          <button data-scroll-to="map" type="button" class="px-5 py-3 rounded-full bg-white/20 backdrop-blur text-white font-bold border border-white/40 hover:bg-white/30 hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white">See the Map</button>
-          <button data-scroll-to="personality" type="button" class="px-5 py-3 rounded-full bg-white/20 backdrop-blur text-white font-bold border border-white/40 hover:bg-white/30 hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Find Your Animal</button>
-          <button data-scroll-to="games" type="button" class="px-5 py-3 rounded-full bg-white/20 backdrop-blur text-white font-bold border border-white/40 hover:bg-white/30 hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Play the Games</button>
-          <button data-scroll-to="quiz" type="button" class="px-5 py-3 rounded-full bg-white/20 backdrop-blur text-white font-bold border border-white/40 hover:bg-white/30 hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Take the Quiz</button>
-          <button data-scroll-to="action" type="button" class="px-5 py-3 rounded-full bg-white/20 backdrop-blur text-white font-bold border border-white/40 hover:bg-white/30 hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Get My Action Plan</button>
+          <button data-scroll-to="animals" type="button" class="px-5 py-3 rounded-full bg-amber text-forest-deep font-bold hover:bg-amber/90 hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-amber">Meet the Animals</button>
+          <button data-scroll-to="map" type="button" class="px-5 py-3 rounded-full bg-paper/15 backdrop-blur text-card font-bold border border-paper/40 hover:bg-paper/25 hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-amber">See the Map</button>
+          <button data-scroll-to="personality" type="button" class="px-5 py-3 rounded-full bg-paper/15 backdrop-blur text-card font-bold border border-paper/40 hover:bg-paper/25 hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-amber">Find Your Animal</button>
+          <button data-scroll-to="games" type="button" class="px-5 py-3 rounded-full bg-paper/15 backdrop-blur text-card font-bold border border-paper/40 hover:bg-paper/25 hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-amber">Play the Games</button>
+          <button data-scroll-to="quiz" type="button" class="px-5 py-3 rounded-full bg-paper/15 backdrop-blur text-card font-bold border border-paper/40 hover:bg-paper/25 hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-amber">Take the Quiz</button>
+          <button data-scroll-to="action" type="button" class="px-5 py-3 rounded-full bg-paper/15 backdrop-blur text-card font-bold border border-paper/40 hover:bg-paper/25 hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-amber">Get My Action Plan</button>
         </div>
       </div>
 
-      <svg class="block w-full text-sky-50" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
+      <svg class="block w-full text-paper" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
         <path d="M0,32 C360,60 1080,0 1440,40 L1440,60 L0,60 Z" fill="currentColor"></path>
       </svg>
     </section>
@@ -104,8 +132,8 @@
     <!-- ============ 2. ANIMAL FACT CARDS ============ -->
     <section id="animals" class="py-16">
       <div class="max-w-6xl mx-auto px-6">
-        <h2 class="font-display text-3xl md:text-4xl font-bold text-slate-800 text-center">Meet the Critically Endangered</h2>
-        <p class="text-slate-600 text-center mt-2 max-w-2xl mx-auto">Tap a card to open its full story.</p>
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-ink text-center">Meet the Critically Endangered</h2>
+        <p class="text-ink-soft text-center mt-2 max-w-2xl mx-auto">Tap a card to open its full story.</p>
         <div id="animal-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10"></div>
       </div>
     </section>
@@ -113,20 +141,20 @@
     <!-- ============ 3. WORLD MAP ============ -->
     <section id="map" class="py-16">
       <div class="max-w-5xl mx-auto px-6">
-        <h2 class="font-display text-3xl md:text-4xl font-bold text-slate-800 text-center">Where They Still Roam</h2>
-        <p class="text-slate-600 text-center mt-2 max-w-2xl mx-auto">Each dot is one place a species still survives. Tap a dot for its story.</p>
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-ink text-center">Where They Still Roam</h2>
+        <p class="text-ink-soft text-center mt-2 max-w-2xl mx-auto">Each dot is one place a species still survives. Tap a dot for its story.</p>
         <div id="map-legend" class="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-6"></div>
-        <div id="map-container" class="relative mt-6 bg-sky-50/70 rounded-2xl p-2 md:p-4 shadow-sm border border-sky-100"></div>
-        <p class="text-center text-xs text-slate-400 mt-3">Distribution data: IUCN Red List / WWF / BirdLife (2026).</p>
+        <div id="map-container" class="relative mt-6 bg-water/10 rounded-2xl p-2 md:p-4 shadow-sm border border-sage/30"></div>
+        <p class="text-center text-xs text-ink-soft/70 mt-3">Distribution data: IUCN Red List / WWF / BirdLife (2026).</p>
       </div>
     </section>
 
     <!-- ============ 4. PERSONALITY QUIZ ============ -->
     <section id="personality" class="py-16">
       <div class="max-w-2xl mx-auto px-6">
-        <h2 class="font-display text-3xl md:text-4xl font-bold text-slate-800 text-center">Which Animal Are You?</h2>
-        <p class="text-slate-600 text-center mt-2 max-w-2xl mx-auto">Answer 12 quick questions and meet your wild twin.</p>
-        <div class="mt-8 bg-white/70 rounded-2xl p-6 md:p-8 shadow-md border border-slate-100">
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-ink text-center">Which Animal Are You?</h2>
+        <p class="text-ink-soft text-center mt-2 max-w-2xl mx-auto">Answer 12 quick questions and meet your wild twin.</p>
+        <div class="mt-8 bg-card/70 rounded-2xl p-6 md:p-8 shadow-md border border-cream">
           <div id="personality-container"></div>
         </div>
       </div>
@@ -135,15 +163,15 @@
     <!-- ============ 5. RESCUE MINI-GAMES ============ -->
     <section id="games" class="py-16">
       <div class="max-w-4xl mx-auto px-6">
-        <h2 class="font-display text-3xl md:text-4xl font-bold text-slate-800 text-center">Rescue Mini-Games</h2>
-        <p class="text-slate-600 text-center mt-2 max-w-2xl mx-auto">Pick a mission and jump in.</p>
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-ink text-center">Rescue Mini-Games</h2>
+        <p class="text-ink-soft text-center mt-2 max-w-2xl mx-auto">Pick a mission and jump in.</p>
         <div class="flex gap-2 justify-center mt-8 flex-wrap" role="tablist" aria-label="Mini-games">
-          <button data-tab="game" type="button" role="tab" aria-selected="true" class="tab-active px-5 py-2.5 rounded-full font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400">🐢 Heart of the Ocean</button>
-          <button data-tab="triage" type="button" role="tab" aria-selected="false" class="px-5 py-2.5 rounded-full font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400">🏥 Wildlife Clinic Triage</button>
+          <button data-tab="game" type="button" role="tab" aria-selected="true" class="tab-active px-5 py-2.5 rounded-full font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sage">🐢 Heart of the Ocean</button>
+          <button data-tab="triage" type="button" role="tab" aria-selected="false" class="px-5 py-2.5 rounded-full font-bold text-ink-soft bg-cream hover:bg-cream transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sage">🏥 Wildlife Clinic Triage</button>
         </div>
         <div data-pane="game" class="mt-6">
-          <div class="bg-slate-900 rounded-2xl overflow-hidden shadow-xl">
-            <div class="flex items-center justify-between px-4 py-2 text-white text-sm font-bold bg-slate-800">
+          <div class="bg-forest-deep rounded-2xl overflow-hidden shadow-xl">
+            <div class="flex items-center justify-between px-4 py-2 text-card text-sm font-bold bg-ink">
               <span>Score: <span id="game-score">0</span></span>
               <span>⏱ <span id="game-timer">60</span>s</span>
               <span>❤️ <span id="game-lives">3</span></span>
@@ -151,38 +179,38 @@
             </div>
             <div class="relative min-h-[420px]">
               <canvas id="game-canvas" class="block w-full"></canvas>
-              <div id="game-overlay" class="absolute inset-0 bg-slate-900/80 flex items-center justify-center p-4 overflow-y-auto">
-                <div id="game-start-screen" class="text-center text-white">
+              <div id="game-overlay" class="absolute inset-0 bg-forest-deep/80 flex items-center justify-center p-4 overflow-y-auto">
+                <div id="game-start-screen" class="text-center text-card">
                   <h4 class="font-display text-3xl font-bold">🐢 Heart of the Ocean</h4>
-                  <p class="mt-1 text-sm text-slate-300">Swim as a sea turtle, catch love &amp; care, and survive 60 seconds.</p>
+                  <p class="mt-1 text-sm text-paper/80">Swim as a sea turtle, catch love &amp; care, and survive 60 seconds.</p>
                   <div class="mt-4 grid grid-cols-2 gap-3 text-left max-w-md mx-auto">
-                    <div class="bg-rose-500/20 border border-rose-400/40 rounded-xl p-3">
-                      <p class="font-bold text-rose-300 text-sm mb-1">❤️ Catch (+points)</p>
+                    <div class="bg-clay/20 border border-clay/40 rounded-xl p-3">
+                      <p class="font-bold text-amber text-sm mb-1">❤️ Catch (+points)</p>
                       <p class="text-2xl leading-tight">❤️</p>
-                      <p class="text-xs text-slate-300 mt-1">Red hearts = love &amp; care</p>
+                      <p class="text-xs text-paper/80 mt-1">Red hearts = love &amp; care</p>
                     </div>
-                    <div class="bg-slate-500/20 border border-slate-400/40 rounded-xl p-3">
-                      <p class="font-bold text-slate-200 text-sm mb-1">☠️ Dodge (−1 life)</p>
+                    <div class="bg-ink/20 border border-paper/30 rounded-xl p-3">
+                      <p class="font-bold text-paper text-sm mb-1">☠️ Dodge (−1 life)</p>
                       <p class="text-2xl leading-tight">🛍️ 🧴</p>
-                      <p class="text-xs text-slate-300 mt-1">Garbage bags &amp; plastic bottles</p>
+                      <p class="text-xs text-paper/80 mt-1">Garbage bags &amp; plastic bottles</p>
                     </div>
                   </div>
-                  <p class="mt-3 text-sm text-slate-300">Move with <strong>arrow keys</strong> or <strong>WASD</strong>. 3 lives — garbage speeds up as the clock runs down.</p>
-                  <button id="game-start-btn" type="button" class="mt-5 px-8 py-3 rounded-full bg-green-600 text-white font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Start</button>
+                  <p class="mt-3 text-sm text-paper/80">Move with <strong>arrow keys</strong> or <strong>WASD</strong>. 3 lives — garbage speeds up as the clock runs down.</p>
+                  <button id="game-start-btn" type="button" class="mt-5 px-8 py-3 rounded-full bg-forest text-card font-bold hover:bg-forest-deep transition focus:outline-none focus-visible:ring-2 focus-visible:ring-amber">Start</button>
                 </div>
-                <div id="game-over-screen" class="text-center text-white hidden">
+                <div id="game-over-screen" class="text-center text-card hidden">
                   <h4 class="font-display text-2xl font-bold">Time's up!</h4>
                   <p class="mt-2 text-lg">Final score: <strong id="game-final-score">0</strong></p>
-                  <p class="text-sm text-slate-300">High score: <span id="game-final-high">0</span></p>
-                  <button id="game-restart-btn" type="button" class="mt-5 px-8 py-3 rounded-full bg-green-600 text-white font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Play again</button>
+                  <p class="text-sm text-paper/80">High score: <span id="game-final-high">0</span></p>
+                  <button id="game-restart-btn" type="button" class="mt-5 px-8 py-3 rounded-full bg-forest text-card font-bold hover:bg-forest-deep transition focus:outline-none focus-visible:ring-2 focus-visible:ring-amber">Play again</button>
                 </div>
               </div>
             </div>
           </div>
-          <p class="text-center text-sm text-slate-500 mt-3">Tip: garbage speeds up as the clock runs down.</p>
+          <p class="text-center text-sm text-ink-soft mt-3">Tip: garbage speeds up as the clock runs down.</p>
         </div>
         <div data-pane="triage" class="mt-6 hidden">
-          <div class="bg-teal-50 rounded-2xl p-6 md:p-8 shadow-sm border border-teal-100">
+          <div class="bg-paper rounded-2xl p-6 md:p-8 shadow-sm border border-sage/30">
             <div id="triage-container"></div>
           </div>
         </div>
@@ -192,9 +220,9 @@
     <!-- ============ 6. KNOWLEDGE QUIZ ============ -->
     <section id="quiz" class="py-16">
       <div class="max-w-2xl mx-auto px-6">
-        <h2 class="font-display text-3xl md:text-4xl font-bold text-slate-800 text-center">Knowledge Quiz</h2>
-        <p class="text-slate-600 text-center mt-2 max-w-2xl mx-auto">Test what you learned from the cards.</p>
-        <div class="mt-8 bg-white/70 rounded-2xl p-6 md:p-8 shadow-md border border-slate-100">
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-ink text-center">Knowledge Quiz</h2>
+        <p class="text-ink-soft text-center mt-2 max-w-2xl mx-auto">Test what you learned from the cards.</p>
+        <div class="mt-8 bg-card/70 rounded-2xl p-6 md:p-8 shadow-md border border-cream">
           <div id="quiz-container"></div>
         </div>
       </div>
@@ -203,50 +231,50 @@
     <!-- ============ 7. ACTION MATCHMAKER ============ -->
     <section id="action" class="py-16">
       <div class="max-w-2xl mx-auto px-6">
-        <h2 class="font-display text-3xl md:text-4xl font-bold text-slate-800 text-center">Your Rescue Action Plan</h2>
-        <p class="text-slate-600 text-center mt-2 max-w-2xl mx-auto">Answer two quick questions and get steps that fit your life.</p>
-        <div class="mt-8 bg-gradient-to-br from-emerald-50 to-sky-50 rounded-2xl p-6 md:p-8 shadow-md border border-emerald-100">
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-ink text-center">Your Rescue Action Plan</h2>
+        <p class="text-ink-soft text-center mt-2 max-w-2xl mx-auto">Answer two quick questions and get steps that fit your life.</p>
+        <div class="mt-8 bg-gradient-to-br from-paper to-paper rounded-2xl p-6 md:p-8 shadow-md border border-sage/30">
           <div id="matchmaker-container"></div>
         </div>
       </div>
     </section>
 
     <!-- ============ FOOTER ============ -->
-    <footer class="bg-slate-800 text-slate-300 py-10 text-center text-sm">
-      <p class="font-display text-lg font-semibold text-white">🌍 Wildkind</p>
+    <footer class="bg-forest-deep text-paper/80 py-10 text-center text-sm">
+      <p class="font-display text-lg font-semibold text-card">🌍 Wildkind</p>
       <p class="mt-1">By: Ariel Fong</p>
       <p class="mt-1">Built to educate and inspire action for endangered species.</p>
-      <p class="mt-4 text-slate-400">Distribution data: IUCN Red List / WWF / BirdLife (2026).</p>
-      <div class="mt-4 max-w-2xl mx-auto px-6 text-left text-xs text-slate-400 leading-relaxed">
-        <p class="font-bold text-slate-300 uppercase tracking-wide">Photo credits</p>
+      <p class="mt-4 text-paper/60">Distribution data: IUCN Red List / WWF / BirdLife (2026).</p>
+      <div class="mt-4 max-w-2xl mx-auto px-6 text-left text-xs text-paper/60 leading-relaxed">
+        <p class="font-bold text-paper/90 uppercase tracking-wide">Photo credits</p>
         <ul class="mt-2 space-y-1">
-          <li>Hero turtle — <a class="underline hover:text-white" href="https://commons.wikimedia.org/wiki/File:Green_Sea_Turtle_grazing_seagrass.jpg">"Green Sea Turtle grazing seagrass"</a> by P.Lindgren (CC BY-SA 3.0)</li>
-          <li>Hawksbill Turtle — <a class="underline hover:text-white" href="https://commons.wikimedia.org/wiki/File:Tortuga_carey_(Eretmochelys_imbricata),_parque_nacional_Ras_Muhammad,_Egipto,_2022-03-28,_DD_56.jpg">"Tortuga carey"</a> by Diego Delso (CC BY-SA 4.0)</li>
-          <li>Amur Leopard — <a class="underline hover:text-white" href="https://commons.wikimedia.org/wiki/File:Amur_Leopard_Panthera_pardus_orientalis_Facing_Forward_1761px.jpg">"Amur Leopard"</a> by Derek Ramsey (CC BY-SA 2.5)</li>
-          <li>Vaquita — <a class="underline hover:text-white" href="https://commons.wikimedia.org/wiki/File:Vaquita2_Olson_NOAA.jpg">"Vaquita2 Olson NOAA"</a> by Paula Olson, NOAA (Public domain)</li>
-          <li>Pangolin — <a class="underline hover:text-white" href="https://commons.wikimedia.org/wiki/File:Sunda_Pangolin_Trenggiling_jawa.jpg">"Sunda Pangolin Trenggiling jawa"</a> by Ari hidayat99 (CC BY-SA 4.0)</li>
-          <li>Mountain Gorilla — <a class="underline hover:text-white" href="https://commons.wikimedia.org/wiki/File:Gorila_de_monta%C3%B1a_(Gorilla_beringei_beringei),_parque_nacional_de_la_Selva_Impenetrable_de_Bwindi,_Uganda,_2024-02-02,_DD_80.jpg">"Gorila de montaña"</a> by Diego Delso (CC BY-SA 4.0)</li>
-          <li>Kakapo — <a class="underline hover:text-white" href="https://commons.wikimedia.org/wiki/File:Kakapo_Sirocco_1.jpg">"Kakapo Sirocco 1"</a> by Department of Conservation (CC BY 2.0)</li>
+          <li>Hero turtle — <a class="underline hover:text-card" href="https://commons.wikimedia.org/wiki/File:Green_Sea_Turtle_grazing_seagrass.jpg">"Green Sea Turtle grazing seagrass"</a> by P.Lindgren (CC BY-SA 3.0)</li>
+          <li>Hawksbill Turtle — <a class="underline hover:text-card" href="https://commons.wikimedia.org/wiki/File:Tortuga_carey_(Eretmochelys_imbricata),_parque_nacional_Ras_Muhammad,_Egipto,_2022-03-28,_DD_56.jpg">"Tortuga carey"</a> by Diego Delso (CC BY-SA 4.0)</li>
+          <li>Amur Leopard — <a class="underline hover:text-card" href="https://commons.wikimedia.org/wiki/File:Amur_Leopard_Panthera_pardus_orientalis_Facing_Forward_1761px.jpg">"Amur Leopard"</a> by Derek Ramsey (CC BY-SA 2.5)</li>
+          <li>Vaquita — <a class="underline hover:text-card" href="https://commons.wikimedia.org/wiki/File:Vaquita2_Olson_NOAA.jpg">"Vaquita2 Olson NOAA"</a> by Paula Olson, NOAA (Public domain)</li>
+          <li>Pangolin — <a class="underline hover:text-card" href="https://commons.wikimedia.org/wiki/File:Sunda_Pangolin_Trenggiling_jawa.jpg">"Sunda Pangolin Trenggiling jawa"</a> by Ari hidayat99 (CC BY-SA 4.0)</li>
+          <li>Mountain Gorilla — <a class="underline hover:text-card" href="https://commons.wikimedia.org/wiki/File:Gorila_de_monta%C3%B1a_(Gorilla_beringei_beringei),_parque_nacional_de_la_Selva_Impenetrable_de_Bwindi,_Uganda,_2024-02-02,_DD_80.jpg">"Gorila de montaña"</a> by Diego Delso (CC BY-SA 4.0)</li>
+          <li>Kakapo — <a class="underline hover:text-card" href="https://commons.wikimedia.org/wiki/File:Kakapo_Sirocco_1.jpg">"Kakapo Sirocco 1"</a> by Department of Conservation (CC BY 2.0)</li>
         </ul>
       </div>
     </footer>
 
     <!-- Animal detail modal -->
-    <div id="modal-backdrop" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/70" role="dialog" aria-modal="true" aria-label="Animal details">
-      <div class="modal-in bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+    <div id="modal-backdrop" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-ink/70" role="dialog" aria-modal="true" aria-label="Animal details">
+      <div class="modal-in bg-card rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
         <div class="relative">
           <img id="modal-image" class="w-full h-56 object-cover rounded-t-2xl" alt="" />
-          <span id="modal-emoji" class="hidden absolute inset-0 items-center justify-center text-8xl rounded-t-2xl bg-teal-50"></span>
-          <button id="modal-close" type="button" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-slate-900/60 text-white text-lg font-bold hover:bg-slate-900/80 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white" aria-label="Close">✕</button>
+          <span id="modal-emoji" class="hidden absolute inset-0 items-center justify-center text-8xl rounded-t-2xl bg-paper"></span>
+          <button id="modal-close" type="button" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-ink/60 text-card text-lg font-bold hover:bg-forest-deep/80 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-amber" aria-label="Close">✕</button>
         </div>
         <div class="p-6">
           <div class="flex flex-wrap items-center gap-2">
-            <h3 id="modal-name" class="font-display text-2xl font-bold text-slate-800"></h3>
-            <span id="modal-status" class="px-3 py-1 rounded-full text-xs font-bold text-white"></span>
+            <h3 id="modal-name" class="font-display text-2xl font-bold text-ink"></h3>
+            <span id="modal-status" class="px-3 py-1 rounded-full text-xs font-bold text-card"></span>
           </div>
-          <p id="modal-species" class="text-sm italic text-slate-500 mt-0.5"></p>
-          <p id="modal-credit" class="text-xs text-slate-400 mt-2"></p>
-          <ul id="modal-facts" class="mt-4 space-y-2 text-sm text-slate-700 list-disc list-inside"></ul>
+          <p id="modal-species" class="text-sm italic text-ink-soft mt-0.5"></p>
+          <p id="modal-credit" class="text-xs text-ink-soft/70 mt-2"></p>
+          <ul id="modal-facts" class="mt-4 space-y-2 text-sm text-ink-soft list-disc list-inside"></ul>
         </div>
       </div>
     </div>
@@ -259,7 +287,7 @@
       animals: [
         {
           id: 'hawksbill', name: 'Hawksbill Turtle', species: 'Eretmochelys imbricata', emoji: '🐢',
-          status: 'Critically Endangered', statusClass: 'red', color: '#14b8a6',
+          status: 'Critically Endangered', statusClass: 'red', color: '#4E7C83',
           population: '~20,000–25,000 nesting females',
           habitat: 'Tropical coral reefs of the Atlantic, Indian & Pacific Oceans',
           threats: 'Poaching for its "tortoiseshell" shell, habitat loss, and climate change',
@@ -279,7 +307,7 @@
         },
         {
           id: 'amur-leopard', name: 'Amur Leopard', species: 'Panthera pardus orientalis', emoji: '🐆',
-          status: 'Critically Endangered', statusClass: 'red', color: '#f97316',
+          status: 'Critically Endangered', statusClass: 'red', color: '#C05F3C',
           population: '~120 in the wild',
           habitat: 'Temperate forests of the Russian Far East & northeast China',
           threats: 'Poaching, loss of prey, and habitat fragmentation',
@@ -299,7 +327,7 @@
         },
         {
           id: 'vaquita', name: 'Vaquita', species: 'Phocoena sinus', emoji: '🐬',
-          status: 'Critically Endangered', statusClass: 'red', color: '#0ea5e9',
+          status: 'Critically Endangered', statusClass: 'red', color: '#6B97A3',
           population: '~10 left (7–10 in 2025)',
           habitat: 'Northern Gulf of California, Mexico — and nowhere else',
           threats: 'Bycatch in illegal gillnets set for the totoaba fish',
@@ -319,7 +347,7 @@
         },
         {
           id: 'pangolin', name: 'Pangolin', species: 'Manis javanica (Sunda pangolin)', emoji: '🦔',
-          status: 'Critically Endangered', statusClass: 'red', color: '#f43f5e',
+          status: 'Critically Endangered', statusClass: 'red', color: '#C9A227',
           population: 'Unknown — declining fast',
           habitat: 'Forests of Southeast Asia',
           threats: 'The most trafficked mammal on Earth — hunted for scales and meat',
@@ -339,7 +367,7 @@
         },
         {
           id: 'mountain-gorilla', name: 'Mountain Gorilla', species: 'Gorilla beringei beringei', emoji: '🦍',
-          status: 'Endangered', statusClass: 'orange', color: '#8b5cf6',
+          status: 'Endangered', statusClass: 'orange', color: '#7A5C3F',
           population: '~1,063',
           habitat: 'Virunga Massif (Rwanda/Uganda/DRC) & Bwindi (Uganda)',
           threats: 'Habitat loss, poaching, and disease',
@@ -359,7 +387,7 @@
         },
         {
           id: 'kakapo', name: 'Kakapo', species: 'Strigops habroptilus', emoji: '🦜',
-          status: 'Critically Endangered', statusClass: 'red', color: '#84cc16',
+          status: 'Critically Endangered', statusClass: 'red', color: '#5C7A3B',
           population: '~250',
           habitat: 'Predator-free islands of New Zealand',
           threats: 'Introduced predators and low genetic diversity',
@@ -548,6 +576,33 @@
       },
     };
 
+    // ============ Title: "Wildkind" with an animal photo embedded in each letter ============
+    const Title = {
+      // one animal per letter, cycling through the six so every letter has its own colour + photo
+      order: ['hawksbill', 'amur-leopard', 'vaquita', 'pangolin', 'mountain-gorilla', 'kakapo'],
+      hexToRgba(hex, a) {
+        const n = parseInt(hex.slice(1), 16);
+        return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+      },
+      render() {
+        const el = document.getElementById('hero-title');
+        if (!el) return;
+        const byId = {};
+        DATA.animals.forEach((a) => { byId[a.id] = a; });
+        const word = 'Wildkind';
+        el.textContent = '';
+        [...word].forEach((ch, i) => {
+          const a = byId[this.order[i % this.order.length]];
+          const s = document.createElement('span');
+          s.className = 'title-letter';
+          s.textContent = ch;
+          // photo on the bottom, a translucent animal-colour wash on top so each letter is tinted differently
+          s.style.backgroundImage = `linear-gradient(${this.hexToRgba(a.color, 0.55)}, ${this.hexToRgba(a.color, 0.55)}), url("${a.image}")`;
+          el.appendChild(s);
+        });
+      },
+    };
+
     // ============ Nav: smooth-scroll helper ============
     const Nav = {
       init() {
@@ -560,52 +615,189 @@
       },
     };
 
-    // ============ Fx: wave particles + hero turtle blur-on-scroll ============
+    // ============ Fx: wandering animal-footprint background + hero turtle blur-on-scroll ============
     const Fx = {
-      particles: null, pctx: null, parts: [], pRaf: 0, W: 0, H: 0,
+      canvas: null, ctx: null, walkers: [], stamps: [], raf: 0, W: 0, H: 0,
+
+      // shades of brown (r,g,b) used for the footprints
+      browns: [[139, 94, 60], [164, 113, 63], [107, 68, 35], [185, 138, 94], [122, 82, 48], [92, 64, 51]],
+      types: ['paw', 'bird', 'hoof', 'claw', 'webbed', 'bunny', 'deer', 'monkey', 'raccoon'],
 
       init() {
-        this.setupParticles();
+        this.setupFootprints();
         this.setupScrollBlur();
       },
 
-      setupParticles() {
-        this.particles = document.getElementById('particles');
-        this.pctx = this.particles.getContext('2d');
-        this.sizeParticles();
-        window.addEventListener('resize', () => this.sizeParticles());
-        for (let i = 0; i < 40; i++) this.parts.push(this.newParticle());
-        const tick = () => {
-          if (document.hidden) { this.pRaf = requestAnimationFrame(tick); return; }
-          this.pLoop();
-          this.pRaf = requestAnimationFrame(tick);
+      setupFootprints() {
+        this.canvas = document.getElementById('particles');
+        this.ctx = this.canvas.getContext('2d');
+        this.size();
+        window.addEventListener('resize', () => this.size());
+        for (let i = 0; i < 12; i++) this.walkers.push(this.newWalker());
+        let last = performance.now();
+        const tick = (now) => {
+          this.raf = requestAnimationFrame(tick);
+          if (document.hidden) return;
+          const dt = Math.min(0.05, (now - last) / 1000);
+          last = now;
+          this.loop(dt);
         };
-        this.pRaf = requestAnimationFrame(tick);
+        this.raf = requestAnimationFrame(tick);
       },
 
-      sizeParticles() {
+      size() {
         const dpr = window.devicePixelRatio || 1;
         this.W = window.innerWidth; this.H = window.innerHeight;
-        this.particles.width = this.W * dpr; this.particles.height = this.H * dpr;
-        this.pctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        this.canvas.width = this.W * dpr; this.canvas.height = this.H * dpr;
+        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       },
 
-      newParticle() {
-        return { x: Math.random() * this.W, y: this.H + 10, r: 1 + Math.random() * 3.5, vy: 10 + Math.random() * 24, phase: Math.random() * Math.PI * 2, amp: 6 + Math.random() * 16 };
+      newWalker() {
+        const brown = this.browns[(Math.random() * this.browns.length) | 0];
+        // Each walker hugs one of the four edges so prints stay in the margins, not the content.
+        const edge = (Math.random() * 4) | 0;             // 0 top, 1 right, 2 bottom, 3 left
+        const horiz = edge === 0 || edge === 2;
+        const band = 26 + Math.random() * 78;             // how far in from the edge it roams
+        const len = horiz ? this.W : this.H;
+        return {
+          edge,
+          band,
+          dir: Math.random() < 0.5 ? 1 : -1,
+          pos: 24 + Math.random() * Math.max(1, len - 48),
+          x: 0, y: 0, heading: 0,
+          speed: 7 + Math.random() * 20,
+          size: 9 + Math.random() * 16,
+          type: this.types[(Math.random() * this.types.length) | 0],
+          rgb: brown.join(','),
+          alpha: 0.16 + Math.random() * 0.10,
+          phase: Math.random() * Math.PI * 2,
+          wander: 0.7 + Math.random() * 1.2,
+          stampTimer: 0,
+          stampInterval: 0.5 + Math.random() * 0.5,
+        };
       },
 
-      pLoop() {
-        this.pctx.clearRect(0, 0, this.W, this.H);
-        this.parts.forEach((p) => {
-          p.y -= p.vy * 0.016;
-          p.phase += 0.02;
-          const x = p.x + Math.sin(p.phase) * p.amp;
-          if (p.y < -12) { Object.assign(p, this.newParticle()); p.y = this.H + 10; }
-          this.pctx.beginPath();
-          this.pctx.arc(x, p.y, p.r, 0, Math.PI * 2);
-          this.pctx.fillStyle = 'rgba(13, 148, 136, 0.18)';
-          this.pctx.fill();
+      loop(dt) {
+        this.ctx.clearRect(0, 0, this.W, this.H);
+        this.walkers.forEach((w) => {
+          w.phase += dt * w.wander;
+          const horiz = w.edge === 0 || w.edge === 2;
+          const len = horiz ? this.W : this.H;
+
+          // travel along the edge, bouncing at the corners
+          w.pos += w.dir * w.speed * dt;
+          if (w.pos < 24) { w.pos = 24; w.dir = 1; }
+          else if (w.pos > len - 24) { w.pos = len - 24; w.dir = -1; }
+
+          // perpendicular offset = band plus a gentle wobble so the trail looks natural
+          const wobble = Math.sin(w.phase) * 7;
+          if (horiz) {
+            w.x = w.pos;
+            w.y = (w.edge === 0 ? w.band : this.H - w.band) + wobble;
+            w.heading = w.dir > 0 ? 0 : Math.PI;
+          } else {
+            w.x = (w.edge === 3 ? w.band : this.W - w.band) + wobble;
+            w.y = w.pos;
+            w.heading = w.dir > 0 ? Math.PI / 2 : -Math.PI / 2;
+          }
+
+          w.stampTimer -= dt;
+          if (w.stampTimer <= 0) {
+            w.stampTimer = w.stampInterval;
+            this.stamps.push({
+              x: w.x, y: w.y, heading: w.heading,
+              size: w.size * (0.9 + Math.random() * 0.2),
+              type: w.type, rgb: w.rgb, alpha: w.alpha,
+              age: 0, life: 2.6 + Math.random() * 2.2,
+            });
+          }
         });
+
+        for (let i = this.stamps.length - 1; i >= 0; i--) {
+          const s = this.stamps[i];
+          s.age += dt;
+          if (s.age >= s.life) { this.stamps.splice(i, 1); continue; }
+          this.drawStamp(s);
+        }
+      },
+
+      steer(cur, target, dt) {
+        let d = target - cur;
+        while (d > Math.PI) d -= Math.PI * 2;
+        while (d < -Math.PI) d += Math.PI * 2;
+        return cur + d * Math.min(1, dt * 3);
+      },
+
+      drawStamp(s) {
+        const c = this.ctx;
+        const fade = Math.max(0, 1 - s.age / s.life);
+        c.save();
+        c.translate(s.x, s.y);
+        c.rotate(s.heading + Math.PI / 2);
+        c.scale(s.size, s.size);
+        c.fillStyle = 'rgba(' + s.rgb + ',' + (s.alpha * fade).toFixed(3) + ')';
+        c.beginPath();
+        this.trace(c, s.type);
+        c.fill();
+        c.restore();
+      },
+
+      trace(c, type) {
+        const toe = (x, y, rx, ry, rot) => {
+          c.save(); c.translate(x, y); c.rotate(rot); c.scale(rx, ry);
+          c.moveTo(1, 0); c.arc(0, 0, 1, 0, Math.PI * 2); c.restore();
+        };
+        if (type === 'paw') {
+          toe(-0.34, -0.34, 0.13, 0.17, -0.35);
+          toe(-0.12, -0.50, 0.13, 0.17, -0.10);
+          toe(0.12, -0.50, 0.13, 0.17, 0.10);
+          toe(0.34, -0.34, 0.13, 0.17, 0.35);
+          toe(0, 0.24, 0.32, 0.26, 0);
+        } else if (type === 'bird') {
+          toe(0, -0.34, 0.085, 0.30, 0);
+          toe(-0.25, -0.22, 0.085, 0.27, -0.55);
+          toe(0.25, -0.22, 0.085, 0.27, 0.55);
+          toe(0, 0.18, 0.10, 0.10, 0);
+        } else if (type === 'hoof') {
+          toe(-0.15, -0.06, 0.13, 0.34, -0.12);
+          toe(0.15, -0.06, 0.13, 0.34, 0.12);
+        } else if (type === 'claw') {
+          [-0.9, -0.45, 0, 0.45, 0.9].forEach((a) => {
+            toe(Math.sin(a) * 0.30, -0.28 - Math.cos(a) * 0.10, 0.07, 0.22, a);
+          });
+          toe(0, 0.22, 0.22, 0.18, 0);
+        } else if (type === 'webbed') {
+          // three forward toes joined by a webbed pad (duck / water-bird)
+          toe(0, -0.36, 0.07, 0.28, 0);
+          toe(-0.27, -0.26, 0.07, 0.26, -0.5);
+          toe(0.27, -0.26, 0.07, 0.26, 0.5);
+          toe(0, 0.08, 0.26, 0.20, 0);
+        } else if (type === 'bunny') {
+          // two long hind feet side by side, small front paws behind
+          toe(-0.20, -0.28, 0.10, 0.34, -0.15);
+          toe(0.20, -0.28, 0.10, 0.34, 0.15);
+          toe(-0.10, 0.34, 0.08, 0.08, 0);
+          toe(0.10, 0.34, 0.08, 0.08, 0);
+        } else if (type === 'deer') {
+          // two pointed cloven hooves, drawn as teardrops
+          toe(-0.13, -0.12, 0.10, 0.34, -0.18);
+          toe(0.13, -0.12, 0.10, 0.34, 0.18);
+          toe(0, 0.20, 0.12, 0.08, 0);
+        } else if (type === 'monkey') {
+          // hand-like: four fingers + opposing thumb + palm
+          toe(-0.30, -0.40, 0.07, 0.26, -0.5);
+          toe(-0.12, -0.50, 0.07, 0.26, -0.15);
+          toe(0.12, -0.50, 0.07, 0.26, 0.15);
+          toe(0.30, -0.40, 0.07, 0.26, 0.5);
+          toe(-0.20, 0.06, 0.09, 0.14, -1.1);
+          toe(0, 0.20, 0.20, 0.20, 0);
+        } else {
+          // raccoon: five slender toes in a fan + rounded palm
+          [-0.9, -0.45, 0, 0.45, 0.9].forEach((a) => {
+            toe(Math.sin(a) * 0.34, -0.26 - Math.cos(a) * 0.08, 0.06, 0.28, a);
+          });
+          toe(0, 0.24, 0.20, 0.14, 0);
+        }
       },
 
       setupScrollBlur() {
@@ -629,15 +821,15 @@
       render(containerId) {
         const grid = document.getElementById(containerId);
         grid.innerHTML = DATA.animals.map((a) => `
-          <button type="button" class="card-btn group flex flex-col overflow-hidden rounded-xl bg-white border border-slate-200 shadow-md hover:shadow-xl hover:-translate-y-1.5 transition focus:outline-none focus-visible:ring-4 focus-visible:ring-teal-300 text-center" data-animal="${a.id}" aria-haspopup="dialog" style="aspect-ratio: 5 / 7;">
+          <button type="button" class="card-btn group flex flex-col overflow-hidden rounded-xl bg-card border border-cream shadow-md hover:shadow-xl hover:-translate-y-1.5 transition focus:outline-none focus-visible:ring-4 focus-visible:ring-sage text-center" data-animal="${a.id}" aria-haspopup="dialog" style="aspect-ratio: 5 / 7;">
             <div class="flex-1 flex items-center justify-center" style="background:${a.color}">
               <span class="text-8xl drop-shadow-lg">${a.emoji}</span>
             </div>
             <div class="flex-[2] flex flex-col items-center justify-center gap-2 px-4 py-3">
-              <h3 class="font-display text-xl font-bold text-slate-800 leading-snug">${a.name}</h3>
-              <p class="text-base italic text-slate-500 leading-relaxed">${a.species}</p>
-              <span class="px-3 py-1 rounded-full text-sm font-bold text-white ${a.statusClass === 'red' ? 'bg-rose-500' : 'bg-orange-500'}">${a.status}</span>
-              <span class="mt-2 text-xs font-semibold text-slate-400 group-hover:text-green-600 transition">Tap to open ↦</span>
+              <h3 class="font-display text-xl font-bold text-ink leading-snug">${a.name}</h3>
+              <p class="text-base italic text-ink-soft leading-relaxed">${a.species}</p>
+              <span class="px-3 py-1 rounded-full text-sm font-bold text-card ${a.statusClass === 'red' ? 'bg-clay-deep' : 'bg-clay'}">${a.status}</span>
+              <span class="mt-2 text-xs font-semibold text-ink-soft/70 group-hover:text-forest transition">Tap to open ↦</span>
             </div>
           </button>
         `).join('');
@@ -667,7 +859,7 @@
         document.getElementById('modal-name').textContent = a.name;
         const statusEl = document.getElementById('modal-status');
         statusEl.textContent = a.status;
-        statusEl.className = 'px-3 py-1 rounded-full text-xs font-bold text-white ' + (a.statusClass === 'red' ? 'bg-rose-500' : 'bg-orange-500');
+        statusEl.className = 'px-3 py-1 rounded-full text-xs font-bold text-card ' + (a.statusClass === 'red' ? 'bg-clay-deep' : 'bg-clay');
         document.getElementById('modal-species').textContent = a.species;
         document.getElementById('modal-credit').textContent = 'Photo: ' + a.imageCredit;
         document.getElementById('modal-facts').innerHTML = a.facts.map((f) => `<li>${f}</li>`).join('');
@@ -715,19 +907,19 @@
 
         container.innerHTML = `
           <svg viewBox="0 0 1000 500" class="w-full h-auto" role="img" aria-label="World map showing where six endangered animals still live">
-            <rect x="0" y="0" width="1000" height="500" fill="#e0f2fe" />
-            ${this.continents.map((c) => `<path d="${path(c)}" fill="#bae6fd" stroke="#7dd3fc" stroke-width="1.5" stroke-linejoin="round" />`).join('')}
+            <rect x="0" y="0" width="1000" height="500" fill="#EDE7D5" />
+            ${this.continents.map((c) => `<path d="${path(c)}" fill="#D5C9A8" stroke="#B3A67F" stroke-width="1.5" stroke-linejoin="round" />`).join('')}
             ${spots.map((s) => s.pts.map(([x, y]) => `
               <g class="map-dot" data-animal="${s.id}" tabindex="0" role="button" aria-label="${s.name} — ${s.status}, ${s.population}">
                 <circle class="pulse" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="10" fill="${s.color}" />
                 <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" fill="${s.color}" stroke="#fff" stroke-width="1.5" />
               </g>`).join('')).join('')}
           </svg>
-          <div id="map-tooltip" class="map-tooltip hidden z-10 bg-white rounded-xl shadow-lg p-3 w-60 border border-slate-100"></div>
+          <div id="map-tooltip" class="map-tooltip hidden z-10 bg-card rounded-xl shadow-lg p-3 w-60 border border-cream"></div>
         `;
 
         document.getElementById('map-legend').innerHTML = DATA.animals.map((a) => `
-          <span class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
+          <span class="inline-flex items-center gap-2 text-sm font-semibold text-ink-soft">
             <span class="w-3 h-3 rounded-full" style="background:${a.color}"></span> ${a.emoji} ${a.name}
           </span>`).join('');
 
@@ -746,8 +938,8 @@
         const a = DATA.animals.find((x) => x.id === id);
         const tip = document.getElementById('map-tooltip');
         tip.innerHTML = `
-          <div class="font-display font-bold text-slate-800">${a.emoji} ${a.name}</div>
-          <div class="text-xs font-bold ${a.statusClass === 'red' ? 'text-rose-500' : 'text-orange-500'}">${a.status}</div>
+          <div class="font-display font-bold text-ink">${a.emoji} ${a.name}</div>
+          <div class="text-xs font-bold ${a.statusClass === 'red' ? 'text-clay-deep' : 'text-clay'}">${a.status}</div>
           <div class="text-sm mt-1"><strong>Population:</strong> ${a.population}</div>
           <div class="text-sm"><strong>Range:</strong> ${a.habitat}</div>`;
         tip.classList.remove('hidden');
@@ -773,16 +965,16 @@
         this.pending = null;
         c.innerHTML = `
           <div class="question-in">
-            <p class="text-sm font-bold text-teal-600 uppercase tracking-wide">Question ${this.current + 1} of ${total}</p>
-            <div class="w-full h-2 bg-slate-200 rounded-full mt-2 mb-4"><div class="h-2 bg-teal-500 rounded-full transition-all duration-500" style="width:${((this.current + 1) / total) * 100}%"></div></div>
-            <h4 class="font-display text-xl font-semibold text-slate-800 mb-4">${q.question}</h4>
+            <p class="text-sm font-bold text-forest uppercase tracking-wide">Question ${this.current + 1} of ${total}</p>
+            <div class="w-full h-2 bg-cream rounded-full mt-2 mb-4"><div class="h-2 bg-forest rounded-full transition-all duration-500" style="width:${((this.current + 1) / total) * 100}%"></div></div>
+            <h4 class="font-display text-xl font-semibold text-ink mb-4">${q.question}</h4>
             <div id="personality-answers" class="space-y-3"></div>
             <div class="flex items-center justify-between mt-5">
-              <button id="p-back" type="button" class="px-4 py-2 rounded-full bg-slate-200 text-slate-700 font-bold hover:bg-slate-300 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 ${this.current === 0 ? 'invisible' : ''}">← Back</button>
-              <button id="p-next" type="button" disabled class="px-6 py-2 rounded-full bg-green-600 text-white font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 disabled:cursor-not-allowed">Next →</button>
+              <button id="p-back" type="button" class="px-4 py-2 rounded-full bg-cream text-ink-soft font-bold hover:bg-cream transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sage ${this.current === 0 ? 'invisible' : ''}">← Back</button>
+              <button id="p-next" type="button" disabled class="px-6 py-2 rounded-full bg-forest text-card font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:cursor-not-allowed">Next →</button>
             </div>
             <div class="text-center mt-3">
-              <button id="p-restart" type="button" class="px-4 py-2 rounded-full bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400">Start over</button>
+              <button id="p-restart" type="button" class="px-4 py-2 rounded-full bg-forest text-card text-sm font-bold hover:bg-forest-deep transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sage">Start over</button>
             </div>
           </div>
         `;
@@ -791,7 +983,7 @@
         q.answers.forEach((ans) => {
           const b = document.createElement('button');
           b.type = 'button';
-          b.className = 'w-full text-left px-4 py-3 rounded-xl border-2 border-slate-200 bg-white hover:border-teal-400 hover:bg-teal-50 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400';
+          b.className = 'w-full text-left px-4 py-3 rounded-xl border-2 border-cream bg-card hover:border-sage hover:bg-paper transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sage';
           b.textContent = ans.text;
           b.addEventListener('click', () => this.select(ans.animal, b, answersEl, nextBtn));
           answersEl.appendChild(b);
@@ -828,14 +1020,14 @@
         const res = DATA.personality.results[animal.id] || { title: 'One of a kind', blurb: 'You are your own unique mix of wild traits.' };
         c.innerHTML = `
           <div class="fade-in text-center">
-            <p class="text-sm font-bold text-teal-600 uppercase tracking-wide">Your animal match is…</p>
+            <p class="text-sm font-bold text-forest uppercase tracking-wide">Your animal match is…</p>
             <span class="text-7xl block mt-3">${animal.emoji}</span>
-            <h4 class="font-display text-3xl font-bold text-slate-800 mt-2">${animal.name}</h4>
-            <p class="font-display text-lg font-semibold text-teal-600">${res.title}</p>
-            <p class="text-slate-600 mt-3 max-w-md mx-auto">${res.blurb}</p>
+            <h4 class="font-display text-3xl font-bold text-ink mt-2">${animal.name}</h4>
+            <p class="font-display text-lg font-semibold text-forest">${res.title}</p>
+            <p class="text-ink-soft mt-3 max-w-md mx-auto">${res.blurb}</p>
             <div class="mt-6 flex flex-wrap justify-center gap-3">
-              <button id="p-learn" type="button" class="px-6 py-3 rounded-full bg-teal-600 text-white font-bold hover:bg-teal-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400">Learn about the ${animal.name}</button>
-              <button id="p-again" type="button" class="px-6 py-3 rounded-full bg-green-600 text-white font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400">Retake quiz</button>
+              <button id="p-learn" type="button" class="px-6 py-3 rounded-full bg-forest text-card font-bold hover:bg-forest-deep transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sage">Learn about the ${animal.name}</button>
+              <button id="p-again" type="button" class="px-6 py-3 rounded-full bg-forest text-card font-bold hover:bg-forest-deep transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sage">Retake quiz</button>
             </div>
           </div>
         `;
@@ -853,8 +1045,8 @@
           buttons.forEach((b) => {
             const active = b.dataset.tab === name;
             b.classList.toggle('tab-active', active);
-            b.classList.toggle('bg-slate-100', !active);
-            b.classList.toggle('text-slate-600', !active);
+            b.classList.toggle('bg-cream', !active);
+            b.classList.toggle('text-ink-soft', !active);
             b.setAttribute('aria-selected', String(active));
           });
           panes.forEach((p) => p.classList.toggle('hidden', p.dataset.pane !== name));
@@ -1022,7 +1214,7 @@
       draw() {
         const c = this.ctx;
         const g = c.createLinearGradient(0, 0, 0, this.H);
-        g.addColorStop(0, '#0ea5e9'); g.addColorStop(1, '#0c4a6e');
+        g.addColorStop(0, '#4E7C83'); g.addColorStop(1, '#2F5157');
         c.fillStyle = g; c.fillRect(0, 0, this.W, this.H);
 
         c.fillStyle = 'rgba(255,255,255,0.25)';
@@ -1035,7 +1227,7 @@
 
       drawItem(c, it) {
         c.save(); c.translate(it.x, it.y);
-        c.fillStyle = '#ef4444';
+        c.fillStyle = '#C75B39';
         this.drawHeart(c, 0, 0, it.r);
         c.fillStyle = 'rgba(255,255,255,0.55)';
         c.beginPath(); c.arc(-it.r * 0.28, -it.r * 0.35, it.r * 0.16, 0, Math.PI * 2); c.fill();
@@ -1053,7 +1245,7 @@
       drawHazard(c, h) {
         c.save(); c.translate(h.x, h.y);
         if (h.kind === 'bag') {
-          c.fillStyle = '#1f2937';
+          c.fillStyle = '#2C2A24';
           c.beginPath();
           c.moveTo(-13, -10);
           c.quadraticCurveTo(0, -16, 13, -10);
@@ -1061,17 +1253,17 @@
           c.quadraticCurveTo(0, 14, -16, 10);
           c.closePath();
           c.fill();
-          c.strokeStyle = '#111827'; c.lineWidth = 2; c.stroke();
-          c.fillStyle = '#6b7280';
+          c.strokeStyle = '#1A1A16'; c.lineWidth = 2; c.stroke();
+          c.fillStyle = '#5C5646';
           c.fillRect(-4, -13, 8, 5);
         } else {
-          c.fillStyle = '#e2e8f0';
+          c.fillStyle = '#DDE6D8';
           c.fillRect(-9, -8, 18, 24);
-          c.fillStyle = '#38bdf8';
+          c.fillStyle = '#4E7C83';
           c.fillRect(-4, -18, 8, 10);
-          c.fillStyle = '#94a3b8';
+          c.fillStyle = '#8A9A6B';
           c.fillRect(-9, 2, 18, 6);
-          c.strokeStyle = '#cbd5e1'; c.lineWidth = 2;
+          c.strokeStyle = '#B9CBB8'; c.lineWidth = 2;
           c.strokeRect(-9, -8, 18, 24);
         }
         c.restore();
@@ -1080,16 +1272,16 @@
       drawTurtle(c, p, blink) {
         if (blink && Math.floor(performance.now() / 120) % 2 === 0) return;
         c.save(); c.translate(p.x, p.y);
-        c.fillStyle = '#059669';
+        c.fillStyle = '#223B28';
         c.beginPath(); c.ellipse(-20, 6, 12, 5, -0.5, 0, Math.PI * 2); c.fill();
         c.beginPath(); c.ellipse(20, 6, 12, 5, 0.5, 0, Math.PI * 2); c.fill();
-        c.fillStyle = '#10b981';
+        c.fillStyle = '#33553A';
         c.beginPath(); c.ellipse(0, 0, 22, 17, 0, 0, Math.PI * 2); c.fill();
-        c.strokeStyle = '#047857'; c.lineWidth = 2; c.stroke();
+        c.strokeStyle = '#1F3A26'; c.lineWidth = 2; c.stroke();
         c.beginPath(); c.arc(0, 0, 10, 0, Math.PI * 2); c.stroke();
-        c.fillStyle = '#34d399';
+        c.fillStyle = '#8A9A6B';
         c.beginPath(); c.arc(0, -20, 8, 0, Math.PI * 2); c.fill();
-        c.fillStyle = '#0c4a6e';
+        c.fillStyle = '#2C2A24';
         c.beginPath(); c.arc(3, -21, 2, 0, Math.PI * 2); c.fill();
         c.restore();
       },
@@ -1129,14 +1321,14 @@
               <div class="relative inline-block">
                 <span id="triage-turtle" class="text-6xl inline-block">🐢</span>
               </div>
-              <p class="mt-2 text-slate-600 font-semibold">${s.note}</p>
+              <p class="mt-2 text-ink-soft font-semibold">${s.note}</p>
             </div>
-            <p class="text-lg text-slate-700 mb-4 text-center">Step ${this.current + 1} of ${this.steps.length}: ${s.prompt}</p>
+            <p class="text-lg text-ink-soft mb-4 text-center">Step ${this.current + 1} of ${this.steps.length}: ${s.prompt}</p>
             <div id="triage-tools" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
             <p id="triage-feedback" class="text-center mt-4 min-h-[1.5rem] font-semibold"></p>
             <div id="triage-progress" class="flex justify-center gap-1 mt-3"></div>
             <div class="text-center mt-4">
-              <button id="triage-restart" type="button" class="px-5 py-2 rounded-full bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400">↻ Restart</button>
+              <button id="triage-restart" type="button" class="px-5 py-2 rounded-full bg-forest text-card text-sm font-bold hover:bg-forest-deep transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sage">↻ Restart</button>
             </div>
           </div>
         `;
@@ -1144,8 +1336,8 @@
         this.tools.slice().sort(() => Math.random() - 0.5).forEach((t) => {
           const b = document.createElement('button');
           b.type = 'button';
-          b.className = 'bg-white border-2 border-slate-200 rounded-2xl p-4 hover:border-teal-400 hover:shadow-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400';
-          b.innerHTML = `<span class="text-4xl block">${t.emoji}</span><span class="text-sm font-bold text-slate-700">${t.label}</span>`;
+          b.className = 'bg-card border-2 border-cream rounded-2xl p-4 hover:border-sage hover:shadow-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sage';
+          b.innerHTML = `<span class="text-4xl block">${t.emoji}</span><span class="text-sm font-bold text-ink-soft">${t.label}</span>`;
           b.addEventListener('click', () => this.choose(t.id));
           toolsEl.appendChild(b);
         });
@@ -1156,16 +1348,16 @@
       renderTitle(c) {
         c.innerHTML = `
           <div class="question-in text-center">
-            <h4 class="font-display text-2xl font-bold text-emerald-700">🏥 Wildlife Clinic Triage</h4>
-            <p class="text-slate-600 mt-2 max-w-md mx-auto">A sea turtle was rescued — oiled and tangled. Treat it step by step to send it home healthy.</p>
-            <div class="mt-4 flex flex-wrap justify-center gap-2 text-sm font-bold text-slate-600">
-              <span class="bg-white rounded-xl px-3 py-2 border border-slate-200">🧽 Sponge</span>
-              <span class="bg-white rounded-xl px-3 py-2 border border-slate-200">💊 Medicine</span>
-              <span class="bg-white rounded-xl px-3 py-2 border border-slate-200">🩹 Bandage</span>
-              <span class="bg-white rounded-xl px-3 py-2 border border-slate-200">🥬 Food</span>
+            <h4 class="font-display text-2xl font-bold text-forest">🏥 Wildlife Clinic Triage</h4>
+            <p class="text-ink-soft mt-2 max-w-md mx-auto">A sea turtle was rescued — oiled and tangled. Treat it step by step to send it home healthy.</p>
+            <div class="mt-4 flex flex-wrap justify-center gap-2 text-sm font-bold text-ink-soft">
+              <span class="bg-card rounded-xl px-3 py-2 border border-cream">🧽 Sponge</span>
+              <span class="bg-card rounded-xl px-3 py-2 border border-cream">💊 Medicine</span>
+              <span class="bg-card rounded-xl px-3 py-2 border border-cream">🩹 Bandage</span>
+              <span class="bg-card rounded-xl px-3 py-2 border border-cream">🥬 Food</span>
             </div>
-            <p class="text-xs text-slate-400 mt-3 max-w-sm mx-auto">The tools are mixed up each round — pick the right one for each symptom. Wrong tool? No penalty.</p>
-            <button id="triage-start" type="button" class="mt-6 px-8 py-3 rounded-full bg-green-600 text-white font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400">Start treatment</button>
+            <p class="text-xs text-ink-soft/70 mt-3 max-w-sm mx-auto">The tools are mixed up each round — pick the right one for each symptom. Wrong tool? No penalty.</p>
+            <button id="triage-start" type="button" class="mt-6 px-8 py-3 rounded-full bg-forest text-card font-bold hover:bg-forest-deep transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sage">Start treatment</button>
           </div>
         `;
         document.getElementById('triage-start').addEventListener('click', () => this.start());
@@ -1175,7 +1367,7 @@
         const el = document.getElementById('triage-progress');
         if (!el) return;
         el.innerHTML = this.steps.map((s, i) =>
-          `<span class="w-3 h-3 rounded-full ${i < this.current ? 'bg-emerald-500' : i === this.current ? 'bg-teal-500' : 'bg-slate-300'}"></span>`
+          `<span class="w-3 h-3 rounded-full ${i < this.current ? 'bg-forest' : i === this.current ? 'bg-forest' : 'bg-cream'}"></span>`
         ).join('');
       },
 
@@ -1186,12 +1378,12 @@
         if (toolId === s.tool) {
           this.busy = true;
           fb.textContent = '✅ ' + this.correctNote(toolId);
-          fb.className = 'text-emerald-600 text-center mt-4 min-h-[1.5rem] font-semibold';
+          fb.className = 'text-forest text-center mt-4 min-h-[1.5rem] font-semibold';
           this.animateTool(s, toolId);
           setTimeout(() => { this.current += 1; this.busy = false; this.render(); }, 950);
         } else {
           fb.textContent = '❌ Not quite — ' + this.hintFor(toolId);
-          fb.className = 'text-rose-500 text-center mt-4 min-h-[1.5rem] font-semibold';
+          fb.className = 'text-clay-deep text-center mt-4 min-h-[1.5rem] font-semibold';
         }
       },
 
@@ -1222,9 +1414,9 @@
         c.innerHTML = `
           <div class="question-in text-center">
             <span class="text-7xl">🌊🐢</span>
-            <h4 class="font-display text-2xl font-semibold text-emerald-700 mt-4">Released back to the ocean!</h4>
-            <p class="text-slate-600 mt-2 max-w-md mx-auto">You cleaned, medicated, bandaged, and fed the turtle. Thanks to you, it's healthy enough to swim home. 💚</p>
-            <button id="triage-restart" type="button" class="mt-6 px-6 py-3 rounded-full bg-green-600 text-white font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400">Treat another patient</button>
+            <h4 class="font-display text-2xl font-semibold text-forest mt-4">Released back to the ocean!</h4>
+            <p class="text-ink-soft mt-2 max-w-md mx-auto">You cleaned, medicated, bandaged, and fed the turtle. Thanks to you, it's healthy enough to swim home. 💚</p>
+            <button id="triage-restart" type="button" class="mt-6 px-6 py-3 rounded-full bg-forest text-card font-bold hover:bg-forest-deep transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sage">Treat another patient</button>
           </div>
         `;
         document.getElementById('triage-restart').addEventListener('click', () => this.start());
@@ -1244,13 +1436,13 @@
         this.locked = false;
         c.innerHTML = `
           <div class="question-in">
-            <p class="text-sm font-bold text-teal-600 uppercase tracking-wide">Question ${this.current + 1} of ${DATA.quiz.length}</p>
-            <h4 class="font-display text-xl font-semibold text-slate-800 mt-1 mb-4">${q.question}</h4>
+            <p class="text-sm font-bold text-forest uppercase tracking-wide">Question ${this.current + 1} of ${DATA.quiz.length}</p>
+            <h4 class="font-display text-xl font-semibold text-ink mt-1 mb-4">${q.question}</h4>
             <div id="quiz-answers" class="space-y-3"></div>
-            <p id="quiz-fact" class="hidden mt-4 p-3 rounded-xl bg-sky-50 text-sky-800 text-sm"></p>
+            <p id="quiz-fact" class="hidden mt-4 p-3 rounded-xl bg-paper text-ink-soft text-sm"></p>
             <div class="flex items-center justify-between mt-5">
-              <span id="quiz-score" class="text-sm font-bold text-slate-600">Score: ${this.score} correct</span>
-              <button id="quiz-next" type="button" disabled class="px-6 py-2 rounded-full bg-green-600 text-white font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 disabled:cursor-not-allowed">Next →</button>
+              <span id="quiz-score" class="text-sm font-bold text-ink-soft">Score: ${this.score} correct</span>
+              <button id="quiz-next" type="button" disabled class="px-6 py-2 rounded-full bg-forest text-card font-bold hover:bg-forest-deep transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:cursor-not-allowed">Next →</button>
             </div>
           </div>
         `;
@@ -1258,8 +1450,8 @@
         q.answers.forEach((a, i) => {
           const b = document.createElement('button');
           b.type = 'button';
-          b.className = 'w-full text-left px-4 py-3 rounded-xl border-2 border-slate-200 bg-white hover:border-teal-400 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400';
-          b.innerHTML = `<span class="font-bold text-teal-600 mr-2">${String.fromCharCode(65 + i)}.</span>${a}`;
+          b.className = 'w-full text-left px-4 py-3 rounded-xl border-2 border-cream bg-card hover:border-sage transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sage';
+          b.innerHTML = `<span class="font-bold text-forest mr-2">${String.fromCharCode(65 + i)}.</span>${a}`;
           b.addEventListener('click', () => this.answer(i, b));
           answersEl.appendChild(b);
         });
@@ -1300,10 +1492,10 @@
         c.innerHTML = `
           <div class="text-center">
             <span class="text-6xl">${emoji}</span>
-            <h4 class="font-display text-2xl font-semibold text-slate-800 mt-3">${title}</h4>
-            <p class="font-display text-4xl font-bold text-teal-600 mt-2">${this.score} / ${total}</p>
-            <p class="text-slate-600 mt-2 max-w-md mx-auto">${msg}</p>
-            <button id="quiz-restart" type="button" class="mt-6 px-6 py-3 rounded-full bg-green-600 text-white font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400">Try again</button>
+            <h4 class="font-display text-2xl font-semibold text-ink mt-3">${title}</h4>
+            <p class="font-display text-4xl font-bold text-forest mt-2">${this.score} / ${total}</p>
+            <p class="text-ink-soft mt-2 max-w-md mx-auto">${msg}</p>
+            <button id="quiz-restart" type="button" class="mt-6 px-6 py-3 rounded-full bg-forest text-card font-bold hover:bg-forest-deep transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sage">Try again</button>
           </div>
         `;
         document.getElementById('quiz-restart').addEventListener('click', () => { this.current = 0; this.score = 0; this.render(); });
@@ -1325,15 +1517,15 @@
         if (this.stage >= this.stages.length) { this.renderResult(c); return; }
         const s = this.stages[this.stage];
         c.innerHTML = `
-          <p class="text-sm font-bold text-teal-600 uppercase tracking-wide">Question ${this.stage + 1} of 2</p>
-          <h4 class="font-display text-xl font-semibold text-slate-800 mt-1 mb-4">${s.question}</h4>
+          <p class="text-sm font-bold text-forest uppercase tracking-wide">Question ${this.stage + 1} of 2</p>
+          <h4 class="font-display text-xl font-semibold text-ink mt-1 mb-4">${s.question}</h4>
           <div id="matchmaker-options" class="grid sm:grid-cols-2 gap-3"></div>
         `;
         const optsEl = document.getElementById('matchmaker-options');
         s.options.forEach((o) => {
           const b = document.createElement('button');
           b.type = 'button';
-          b.className = 'px-4 py-4 rounded-2xl border-2 border-slate-200 bg-white text-left font-bold text-slate-700 hover:border-teal-400 hover:shadow-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400';
+          b.className = 'px-4 py-4 rounded-2xl border-2 border-cream bg-card text-left font-bold text-ink-soft hover:border-sage hover:shadow-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sage';
           b.textContent = o;
           b.addEventListener('click', () => { this[s.key] = o; this.stage += 1; this.render(); });
           optsEl.appendChild(b);
@@ -1350,18 +1542,18 @@
           <div class="fade-in">
             <div class="text-center mb-5">
               <span class="text-5xl">🎯</span>
-              <h4 class="font-display text-2xl font-semibold text-emerald-700 mt-3">${result.title}</h4>
-              <p class="text-slate-600 mt-1">Because you're a <span class="font-bold">${this.lifeStage}</span> with <span class="font-bold">${this.time}</span></p>
+              <h4 class="font-display text-2xl font-semibold text-forest mt-3">${result.title}</h4>
+              <p class="text-ink-soft mt-1">Because you're a <span class="font-bold">${this.lifeStage}</span> with <span class="font-bold">${this.time}</span></p>
             </div>
             <ol class="space-y-3">
               ${result.steps.map((s, i) => `
-                <li class="flex gap-3 items-start bg-white rounded-2xl p-4 border border-emerald-100 shadow-sm">
-                  <span class="flex-none w-8 h-8 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center">${i + 1}</span>
-                  <span class="text-slate-700">${s}</span>
+                <li class="flex gap-3 items-start bg-card rounded-2xl p-4 border border-sage/30 shadow-sm">
+                  <span class="flex-none w-8 h-8 rounded-full bg-forest text-card font-bold flex items-center justify-center">${i + 1}</span>
+                  <span class="text-ink-soft">${s}</span>
                 </li>`).join('')}
             </ol>
             <div class="text-center mt-6">
-              <button id="matchmaker-restart" type="button" class="px-6 py-3 rounded-full bg-green-600 text-white font-bold hover:bg-green-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400">Start over</button>
+              <button id="matchmaker-restart" type="button" class="px-6 py-3 rounded-full bg-forest text-card font-bold hover:bg-forest-deep transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sage">Start over</button>
             </div>
           </div>
         `;
@@ -1371,6 +1563,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       Nav.init();
+      Title.render();
       Fx.init();
       Cards.render('animal-grid');
       Map.init();
